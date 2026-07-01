@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Real de Miramar · Ruta de Valor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a1818'/%3E%3Ctext x='50' y='70' font-family='Georgia' font-size='54' font-weight='bold' fill='%23fff' text-anchor='middle'%3ERM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Kefa-Regular';src:local('Kefa'),url('fonts/Kefa-Regular.ttf') format('truetype');font-display:swap;}
+:root{--negro:#1a1818;--oro:#1a1818;--crema:#f5f4f2;--arena:#efede9;--piedra:#8b8782;--carbon:#4a4744;--linea:#e6e3dd;
+  --verde:#3f7a5f;--amar:#b07d3a;--rojo:#a8503f;--azul:#4a6d8c;--tinta:#1a1818;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--crema);color:var(--negro);font-family:'Poppins','Raleway','Helvetica Neue',Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+.serif{font-family:Kefa-Regular,Georgia,serif;}
+a{color:var(--azul);}
+header{background:#fff;border-bottom:1px solid var(--linea);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo img{height:30px;width:auto;}
+.logo .t{font-family:Kefa-Regular,Georgia,serif;font-size:16px;letter-spacing:.5px;}
+.logo .sub{color:var(--piedra);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;border-left:1px solid var(--linea);padding-left:10px;}
+.hbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+#badge{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--carbon);border:1px solid var(--linea);border-radius:20px;padding:5px 11px;cursor:pointer;background:#fff;}
+#badge .dot{width:8px;height:8px;border-radius:50%;background:var(--piedra);}
+#badge[data-s="live"]{color:var(--verde);} #badge[data-s="live"] .dot{background:var(--verde);}
+#badge[data-s="cache"] .dot{background:var(--amar);} #badge[data-s="error"] .dot{background:var(--rojo);}
+#badge[data-s="loading"] .dot{background:var(--oro);animation:pulse 1s infinite;}
+#badge[data-s="snapshot"] .dot{background:var(--piedra);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.modo{display:flex;border:1px solid var(--linea);border-radius:20px;overflow:hidden;font-size:11px;}
+.modo button{border:0;background:#fff;padding:6px 12px;cursor:pointer;color:var(--piedra);font-family:inherit;letter-spacing:.3px;}
+.modo button.on{background:var(--negro);color:#fff;}
+main{max-width:1000px;margin:0 auto;padding:16px 18px 60px;}
+h2.sec{font-family:Kefa-Regular,Georgia,serif;font-weight:normal;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--piedra);margin:30px 0 12px;display:flex;align-items:center;gap:8px;}
+h2.sec:first-child{margin-top:8px;}
+.card{background:#fff;border:1px solid var(--linea);border-radius:10px;padding:16px 18px;}
+.muted{color:var(--piedra);}
+.nota{font-size:12px;color:var(--piedra);}
+/* PUERTA LEGAL */
+.puertas{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+.puerta{display:flex;align-items:center;gap:7px;border:1px solid var(--linea);border-radius:20px;padding:6px 13px;font-size:12px;background:#fff;}
+.puerta .p{width:9px;height:9px;border-radius:50%;}
+.puerta.verde .p{background:var(--verde);} .puerta.amar .p{background:var(--amar);} .puerta.rojo .p{background:var(--rojo);}
+.puerta.bbva{border-color:var(--rojo);font-weight:600;}
+.gatebanner{border-radius:8px;padding:12px 16px;margin:8px 0 0;font-size:13.5px;border-left:5px solid var(--rojo);background:#fff;color:var(--negro);}
+.gatebanner.ok{border-left-color:var(--verde);}
+/* ESCALERA */
+.escalera{display:flex;align-items:flex-end;gap:6px;overflow-x:auto;padding:10px 2px 4px;}
+.step{flex:1 0 96px;min-width:96px;border-radius:8px 8px 0 0;padding:10px 8px 12px;color:#fff;position:relative;text-align:center;border:1px solid rgba(0,0,0,.06);}
+.step .n{font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.85;}
+.step .nm{font-size:12px;line-height:1.2;margin-top:2px;min-height:29px;}
+.step .pr{font-family:Kefa-Regular,Georgia,serif;font-size:16px;margin-top:6px;}
+.step .pc{font-size:10px;opacity:.9;margin-top:3px;}
+.step.verde{background:var(--verde);} .step.amar{background:var(--amar);} .step.rojo{background:#b9736a;} .step.gris{background:var(--piedra);}
+.step.here{box-shadow:0 0 0 3px var(--negro);z-index:2;}
+.step .here-tag{position:absolute;top:-19px;left:50%;transform:translateX(-50%);background:var(--negro);color:#fff;font-size:9px;padding:2px 7px;border-radius:10px;white-space:nowrap;}
+.step .lock{position:absolute;top:6px;right:7px;font-size:11px;opacity:.9;}
+.esc--axis{font-size:10px;color:var(--piedra);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:6px;}
+.kpi{background:#fff;border:1px solid var(--linea);border-radius:8px;padding:13px 15px;}
+.kpi .k{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--piedra);}
+.kpi .v{font-family:Kefa-Regular,Georgia,serif;font-size:28px;line-height:1.05;margin-top:3px;}
+.progress{height:8px;background:var(--arena);border-radius:6px;overflow:hidden;margin-top:8px;}
+.progress > i{display:block;height:100%;background:var(--verde);}
+/* SEMAFORO TRAMITES */
+.filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.chip{border:1px solid var(--linea);background:#fff;border-radius:16px;padding:5px 12px;font-size:11.5px;cursor:pointer;color:var(--carbon);}
+.chip.on{background:var(--negro);color:#fff;border-color:var(--negro);}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;}
+.tcard{background:#fff;border:1px solid var(--linea);border-radius:9px;padding:12px 14px;border-left:5px solid var(--piedra);}
+.tcard.verde{border-left-color:var(--verde);} .tcard.amar{border-left-color:var(--amar);} .tcard.rojo{border-left-color:var(--rojo);}
+.tcard .st{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px;}
+.tcard .st .p{width:8px;height:8px;border-radius:50%;}
+.tcard.verde .st .p{background:var(--verde);} .tcard.amar .st .p{background:var(--amar);} .tcard.rojo .st .p{background:var(--rojo);}
+.tcard h4{margin:5px 0 3px;font-size:13.5px;font-weight:600;line-height:1.25;}
+.tcard .meta{font-size:11px;color:var(--piedra);}
+.tcard .lk{margin-top:7px;display:flex;gap:12px;font-size:11.5px;}
+/* MAPA */
+.mapwrap{position:relative;width:100%;border-radius:10px;overflow:hidden;border:1px solid var(--linea);background:#dfe7ec;}
+.mapwrap img{width:100%;display:block;}
+.pin{position:absolute;transform:translate(-50%,-50%);width:19px;height:19px;border-radius:50%;border:2px solid #fff;cursor:pointer;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+.pin.big{width:23px;height:23px;font-size:9px;}
+.leyenda{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--carbon);}
+.leyenda span{display:inline-flex;align-items:center;gap:5px;}
+.leyenda i{width:11px;height:11px;border-radius:50%;display:inline-block;}
+/* BITACORA */
+.feed{display:flex;flex-direction:column;gap:8px;}
+.bita{background:#fff;border:1px solid var(--linea);border-radius:9px;padding:11px 14px;display:flex;gap:12px;}
+.bita .fch{font-size:11px;color:var(--piedra);white-space:nowrap;min-width:74px;font-family:Kefa-Regular,Georgia,serif;}
+.bita h4{margin:0 0 2px;font-size:13px;font-weight:600;}
+.bita .d{font-size:12px;color:var(--carbon);}
+.bita .tg{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#fff;background:var(--piedra);border-radius:10px;padding:1px 7px;display:inline-block;margin-top:4px;}
+.bita .tg.avance{background:var(--verde);} .bita .tg.obstaculo{background:var(--rojo);} .bita .tg.hito{background:var(--negro);} .bita .tg.legal{background:var(--azul);}
+.vlink{color:var(--rojo);font-size:11.5px;}
+/* DOCS */
+.docrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--linea);font-size:12.5px;}
+.docrow:last-child{border-bottom:0;}
+.docrow .cat{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--piedra);}
+/* DINERO */
+.finlock{text-align:center;padding:22px;}
+.finlock input{border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:13px;}
+.btn{border:0;background:var(--negro);color:#fff;border-radius:8px;padding:9px 16px;font-family:inherit;font-size:13px;cursor:pointer;letter-spacing:.3px;}
+.btn.ghost{background:#fff;color:var(--negro);border:1px solid var(--linea);}
+.bar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--linea);margin-top:6px;font-size:11px;}
+.bar .pg{background:var(--verde);color:#fff;display:flex;align-items:center;padding:0 8px;}
+.bar .pf{background:var(--arena);color:var(--carbon);display:flex;align-items:center;padding:0 8px;flex:1;}
+/* MODAL */
+.ov{position:absolute;left:0;right:0;top:0;background:rgba(26,24,24,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:80;}
+.ov.on{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:460px;width:100%;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h3{margin:0 0 4px;font-family:Kefa-Regular,Georgia,serif;font-weight:normal;font-size:20px;}
+.modal .x{float:right;cursor:pointer;color:var(--piedra);font-size:20px;line-height:1;}
+/* GATE */
+#gate{position:fixed;inset:0;background:var(--crema);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+#gate .box{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:30px 28px;max-width:360px;text-align:center;}
+#gate input{border:1px solid var(--linea);border-radius:8px;padding:10px 12px;font-size:14px;width:100%;font-family:inherit;margin:12px 0;}
+/* TOAST */
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--negro);color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;opacity:0;transition:opacity .25s;z-index:300;pointer-events:none;}
+#toast.on{opacity:1;}
+#toast.warn{background:var(--rojo);}
+.modo-ninos-hide{display:none;}
+body.inv .modo-ninos-hide{display:block;}
+body.inv .modo-inv-hide{display:none;}
+.hint{background:var(--arena);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--carbon);margin-top:8px;}
+footer{max-width:1000px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra);font-size:11px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <div class="serif" style="font-size:22px;">Real de Miramar</div>
+    <div class="nota" style="margin-top:4px;">Tablero interno · Ruta de Valor</div>
+    <input id="gKey" type="password" placeholder="Clave de acceso" autocomplete="off">
+    <button class="btn" style="width:100%;" onclick="intentarGate()">Entrar</button>
+    <div class="nota" style="margin-top:10px;">Board privado. No compartir fuera del equipo.</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <img src="img/yod-logo.png" alt="YoDesarrollo" onerror="this.style.display='none'">
+    <div>
+      <div class="t">Real de Miramar</div>
+    </div>
+    <div class="sub">Ruta de Valor</div>
+  </div>
+  <div class="hbtns">
+    <div class="modo" id="modo">
+      <button data-m="nino" class="on" onclick="setModo('nino')">Modo simple</button>
+      <button data-m="inv" onclick="setModo('inv')">Modo inversionista</button>
+    </div>
+    <div id="badge" data-s="loading" onclick="fetchBoard(true)"><span class="dot"></span><span id="badgeTxt">Cargando</span></div>
+  </div>
+</header>
+
+<main id="app" style="display:none;">
+
+  <h2 class="sec">Puerta legal · ¿se puede vender ya?</h2>
+  <div id="gateBanner"></div>
+  <div class="puertas" id="puertas"></div>
+
+  <h2 class="sec">La escalera de valor</h2>
+  <div class="card">
+    <div id="escaleraHint" class="modo-inv-hide" style="font-size:13.5px;margin-bottom:6px;"></div>
+    <div class="escalera" id="escalera"></div>
+    <div class="nota" style="margin-top:6px;">Cada escalón lo desbloquea un permiso. <span class="modo-ninos-hide">El precio por m² sube en cada paso.</span></div>
+  </div>
+
+  <h2 class="sec">¿Cómo vamos? · de un vistazo</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <h2 class="sec">Semáforo de trámites</h2>
+  <div class="filtros" id="filtros"></div>
+  <div class="tgrid" id="tramites"></div>
+
+  <h2 class="sec">Mapa de lotes · Real de Miramar</h2>
+  <div class="mapwrap" id="mapwrap">
+    <img src="img/miramar_master_plan.png" alt="Master plan Real de Miramar">
+    <div id="pins"></div>
+  </div>
+  <div class="leyenda">
+    <span><i style="background:#a4be90"></i>Disponible</span>
+    <span><i style="background:#c79a8a"></i>Reservado</span>
+    <span><i style="background:#7a5a45"></i>Vendido</span>
+    <span><i style="background:#7aa6d6"></i>Comercial</span>
+  </div>
+  <div class="hint modo-ninos-hide" id="loteHint"></div>
+
+  <h2 class="sec">Bitácora de avances</h2>
+  <div class="feed" id="bitacora"></div>
+
+  <div class="modo-ninos-hide">
+    <h2 class="sec">Dinero · presupuesto y pagos</h2>
+    <div class="card" id="dinero"></div>
+  </div>
+
+  <h2 class="sec">Expediente · documentos vigentes</h2>
+  <div class="card" id="docs"></div>
+
+  <div style="margin-top:24px;text-align:center;" class="modo-ninos-hide">
+    <button class="btn ghost" onclick="abrirAvance()">＋ Registrar un avance</button>
+  </div>
+</main>
+
+<footer>
+  Real de Miramar · Ruta de Valor — tablero interno de YoDesarrollo. Datos administrados desde el Google Sheet Maestro.
+  <div id="stamp" style="margin-top:4px;"></div>
+</footer>
+
+<div class="ov" id="ov"><div class="modal" id="modalBox"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ============ CONFIG ============ */
+var CONFIG = {
+  SHEET_URL: "https://script.google.com/macros/s/AKfycbwrV75GBbnq4-TFe3bPLHp7U7LSPEeYJIAPP2eKJIFcJb7tcBEN0HgzKak1vxF4jvnk/exec",
+  VIEW_KEY: "MiramarYOD-2026"   /* clave para VER (seguridad suave, JS público). fin_secret y write_secret NUNCA van aquí: se teclean. */
+};
+var CACHE_KEY="rm_board_cache_v1", UNLOCK_KEY="rm_unlock_v1", QKEY="rm_board_q_v1";
+var DATA=null, FIN=null, MODO="nino", FILTRO="todos";
+
+/* Geometría estática de los lotes (del real-miramar-app; el estado/precio vivo viene del Sheet) */
+var LOTES_GEO = [
+ {n:1,m2:1529.041,uso:"COMERCIAL",x:93.5,y:33.8,status:"commercial"},
+ {n:47,m2:346.799,uso:"COMERCIAL",x:91.4,y:83.6,status:"commercial"},
+ {n:2,m2:180,uso:"HAB",x:82.4,y:51.9,status:"available"},{n:3,m2:208,uso:"HAB",x:77.8,y:51.1,status:"available"},
+ {n:4,m2:178,uso:"HAB",x:80.2,y:36.0,status:"available"},{n:5,m2:223,uso:"HAB",x:79.6,y:23.3,status:"available"},
+ {n:6,m2:318,uso:"HAB",x:74.8,y:13.3,status:"available"},{n:7,m2:321,uso:"HAB",x:68.6,y:14.1,status:"available"},
+ {n:8,m2:223,uso:"HAB",x:62.1,y:24.3,status:"available"},{n:9,m2:178,uso:"HAB",x:61.8,y:35.4,status:"available"},
+ {n:10,m2:208,uso:"HAB",x:65.1,y:50.3,status:"available"},{n:11,m2:180,uso:"HAB",x:59.9,y:51.1,status:"available"},
+ {n:12,m2:180,uso:"HAB",x:55.2,y:50.9,status:"available"},{n:13,m2:208,uso:"HAB",x:50.9,y:50.6,status:"reserved"},
+ {n:14,m2:178,uso:"HAB",x:53.2,y:36.0,status:"available"},{n:15,m2:223,uso:"HAB",x:53.4,y:24.3,status:"available"},
+ {n:16,m2:324,uso:"HAB",x:47.8,y:14.1,status:"available"},{n:17,m2:327,uso:"HAB",x:40.8,y:13.5,status:"available"},
+ {n:18,m2:223,uso:"HAB",x:35.7,y:24.1,status:"available"},{n:19,m2:178,uso:"HAB",x:35.5,y:35.4,status:"available"},
+ {n:20,m2:180,uso:"HAB",x:28.7,y:50.3,status:"available"},{n:21,m2:208,uso:"HAB",x:24.5,y:50.0,status:"available"},
+ {n:22,m2:178,uso:"HAB",x:27.2,y:35.7,status:"available"},{n:23,m2:223,uso:"HAB",x:26.1,y:24.9,status:"available"},
+ {n:24,m2:330,uso:"HAB",x:20.5,y:15.2,status:"available"},{n:25,m2:328,uso:"HAB",x:13.8,y:14.3,status:"available"},
+ {n:26,m2:203,uso:"HAB",x:9.9,y:24.1,status:"available"},{n:27,m2:181,uso:"HAB",x:9.4,y:38.1,status:"available"},
+ {n:28,m2:202,uso:"HAB",x:10.4,y:49.5,status:"available"},{n:29,m2:200,uso:"HAB",x:11.1,y:60.9,status:"available"},
+ {n:30,m2:411,uso:"HAB",x:11.3,y:77.6,status:"available"},{n:31,m2:225,uso:"HAB",x:16.9,y:84.4,status:"available"},
+ {n:32,m2:180,uso:"HAB",x:21.3,y:85.2,status:"available"},{n:33,m2:180,uso:"HAB",x:25.9,y:84.9,status:"available"},
+ {n:34,m2:180,uso:"HAB",x:30.1,y:85.2,status:"available"},{n:35,m2:180,uso:"HAB",x:34.8,y:85.5,status:"reserved"},
+ {n:36,m2:180,uso:"HAB",x:38.9,y:85.2,status:"available"},{n:37,m2:180,uso:"HAB",x:43.0,y:86.0,status:"available"},
+ {n:38,m2:180,uso:"HAB",x:47.5,y:85.5,status:"available"},{n:39,m2:180,uso:"HAB",x:52.1,y:85.8,status:"available"},
+ {n:40,m2:180,uso:"HAB",x:56.1,y:85.5,status:"available"},{n:41,m2:180,uso:"HAB",x:60.7,y:85.5,status:"available"},
+ {n:42,m2:180,uso:"HAB",x:64.7,y:85.2,status:"available"},{n:43,m2:180,uso:"HAB",x:69.1,y:85.5,status:"available"},
+ {n:44,m2:180,uso:"HAB",x:73.8,y:85.2,status:"available"},{n:45,m2:180,uso:"HAB",x:78.1,y:85.2,status:"available"},
+ {n:46,m2:180,uso:"HAB",x:82.3,y:84.7,status:"available"}
+];
+var STATUS_COL={available:"#a4be90",reserved:"#c79a8a",sold:"#7a5a45",commercial:"#7aa6d6"};
+
+/* ============ helpers ============ */
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function money(n){n=Number(String(n).replace(/[^0-9.\-]/g,""));if(isNaN(n))return"—";return"$"+n.toLocaleString("es-MX");}
+function clase(estado){var s=String(estado||"").toLowerCase();if(s.indexOf("verde")>=0)return"verde";if(s.indexOf("amar")>=0)return"amar";if(s.indexOf("rojo")>=0)return"rojo";return"gris";}
+function toast(m,w){var t=$("toast");t.textContent=m;t.className="on"+(w?" warn":"");setTimeout(function(){t.className="";},2600);}
+
+/* ============ gate ============ */
+function intentarGate(){var k=($("gKey").value||"").trim();if(k===CONFIG.VIEW_KEY){try{localStorage.setItem(UNLOCK_KEY,k);}catch(e){}iniciar();}else toast("Clave incorrecta",true);}
+function desbloqueado(){try{return localStorage.getItem(UNLOCK_KEY)===CONFIG.VIEW_KEY;}catch(e){return false;}}
+function iniciar(){$("gate").style.display="none";$("app").style.display="block";fetchBoard(false);}
+
+/* ============ fetch / cache ============ */
+function setBadge(s,txt){$("badge").setAttribute("data-s",s);$("badgeTxt").textContent=txt||s;}
+function fetchBoard(manual){
+  setBadge("loading","Cargando");
+  var url=CONFIG.SHEET_URL+(CONFIG.SHEET_URL.indexOf("?")<0?"?":"&")+"recurso=board&cb="+Date.now();
+  var ctrl=new AbortController();var t=setTimeout(function(){ctrl.abort();},12000);
+  fetch(url,{signal:ctrl.signal}).then(function(r){return r.json();}).then(function(j){
+    clearTimeout(t);
+    if(j&&j.tablas){DATA=j;try{localStorage.setItem(CACHE_KEY,JSON.stringify(j));}catch(e){}render();setBadge("live","En vivo");if(manual)toast("Actualizado");}
+    else usarCache();
+  }).catch(function(e){clearTimeout(t);console.warn("fetch falló",e);usarCache();});
+}
+function usarCache(){var c=null;try{c=JSON.parse(localStorage.getItem(CACHE_KEY));}catch(e){}
+  if(c&&c.tablas){DATA=c;render();setBadge("cache","Copia guardada");}
+  else{setBadge("error","Sin datos");$("app").insertAdjacentHTML("afterbegin",'<div class="gatebanner">No se pudo cargar el board. Revisa la conexión o el endpoint.</div>');}
+}
+
+/* ============ modo ============ */
+function setModo(m){MODO=m;document.body.className=(m==="inv"?"inv":"");
+  var b=$("modo").getElementsByTagName("button");for(var i=0;i<b.length;i++)b[i].className=(b[i].getAttribute("data-m")===m?"on":"");
+  if(DATA)render();}
+
+/* ============ render ============ */
+function tabla(n){return (DATA&&DATA.tablas&&DATA.tablas[n])||[];}
+function render(){
+  var r=DATA.resumen||{};
+  renderPuertas(r);renderEscalera(r);renderKpis(r);renderTramites();renderPins();renderBitacora();renderDocs();renderDinero();
+  var meta=DATA.meta||{};$("stamp").textContent="Actualizado: "+(meta.actualizado?new Date(meta.actualizado).toLocaleString("es-MX"):"—")+(meta.incluye_financiero?" · financiero abierto":"");
+}
+
+function renderPuertas(r){
+  var ps=r.puertas_legales||[];
+  var abierta=!!r.preventa_habilitada;
+  $("gateBanner").innerHTML='<div class="gatebanner'+(abierta?' ok':'')+'">'+
+    (abierta?'✅ <b>Puertas legales en verde.</b> La preventa puede activarse.':
+     '🔒 <b>Preventa bloqueada.</b> Faltan permisos: '+(r.puertas_verdes||0)+' de '+(r.puertas_total||ps.length)+' puertas en verde. Ningún lote se aparta ni cobra hasta liberar la hipoteca BBVA y registrar el contrato PROFECO.')+'</div>';
+  $("puertas").innerHTML=ps.map(function(p){
+    var c=clase(p.estado);var bbva=/bbva|hipoteca/i.test(p.puerta)?" bbva":"";
+    return '<span class="puerta '+c+bbva+'"><span class="p"></span>'+esc(p.puerta)+'</span>';
+  }).join("");
+}
+
+function renderEscalera(r){
+  var h=tabla("HITOS").slice().sort(function(a,b){return (a.orden||0)-(b.orden||0);});
+  // "estás aquí" = primer escalón no verde
+  var hereIdx=-1;for(var i=0;i<h.length;i++){if(clase(h[i].estado)!=="verde"){hereIdx=i;break;}}
+  var inv=(MODO==="inv");
+  $("escalera").innerHTML=h.map(function(s,i){
+    var c=clase(s.estado);var here=(i===hereIdx);
+    var precio=inv?('<div class="pr">'+money(s.precio_m2)+'/m²</div>'):'';
+    var pct=(s.pct_avance!=null&&String(s.pct_avance)!=="")?('<div class="pc">'+esc(s.pct_avance)+'</div>'):'';
+    var lock=(c==="rojo")?'<span class="lock">🔒</span>':'';
+    return '<div class="step '+c+(here?' here':'')+'">'+
+      (here?'<span class="here-tag">estás aquí</span>':'')+lock+
+      '<div class="n">Escalón '+esc(s.orden)+'</div>'+
+      '<div class="nm">'+esc(s.nombre)+'</div>'+precio+pct+'</div>';
+  }).join("");
+  var here=h[hereIdx]||{};
+  $("escaleraHint").innerHTML='Vamos en <b>'+esc(here.nombre||"el inicio")+'</b>. Para subir al siguiente escalón falta: <b>'+esc(here.puerta_legal_requerida||"—")+'</b>.';
+}
+
+function renderKpis(r){
+  var pe=r.tramites_por_estado||{};
+  var k=[
+    {k:"Avance de trámites",v:(r.avance_tramites_pct||0)+"%",bar:r.avance_tramites_pct},
+    {k:"Hechos 🟢",v:pe.verde||0},{k:"En proceso 🟡",v:pe.amarillo||0},{k:"Faltan 🔴",v:pe.rojo||0},
+    {k:"Puertas legales",v:(r.puertas_verdes||0)+" / "+(r.puertas_total||0)}
+  ];
+  $("kpis").innerHTML=k.map(function(x){
+    return '<div class="kpi"><div class="k">'+esc(x.k)+'</div><div class="v">'+esc(x.v)+'</div>'+
+      (x.bar!=null?'<div class="progress"><i style="width:'+(x.bar||0)+'%"></i></div>':'')+'</div>';
+  }).join("");
+}
+
+function renderTramites(){
+  var t=tabla("TRAMITES");
+  var conteo={todos:t.length,verde:0,amar:0,rojo:0};
+  t.forEach(function(x){var c=clase(x.estado);if(conteo[c]!=null)conteo[c]++;});
+  var fs=[["todos","Todos ("+conteo.todos+")"],["verde","🟢 Hechos ("+conteo.verde+")"],["amar","🟡 En proceso ("+conteo.amar+")"],["rojo","🔴 Faltan ("+conteo.rojo+")"]];
+  $("filtros").innerHTML=fs.map(function(f){return '<span class="chip'+(FILTRO===f[0]?' on':'')+'" onclick="setFiltro(\''+f[0]+'\')">'+f[1]+'</span>';}).join("");
+  var vids={};tabla("VIDEOS").forEach(function(v){if(v.tramite_id)vids[v.tramite_id]=v.url;});
+  var rows=t.filter(function(x){return FILTRO==="todos"||clase(x.estado)===FILTRO;});
+  $("tramites").innerHTML=rows.map(function(x){
+    var c=clase(x.estado);var vid=vids[x.tramite_id];
+    var doc=(x.oficio_folio&&String(x.oficio_folio).trim())?('<span class="meta">📄 '+esc(x.oficio_folio)+'</span>'):'';
+    var lk=[];if(vid)lk.push('<a class="vlink" href="'+esc(vid)+'" target="_blank">▶ Video</a>');
+    return '<div class="tcard '+c+'"><div class="st"><span class="p"></span>'+esc(x.estado)+'</div>'+
+      '<h4>'+esc(x.nombre)+'</h4>'+
+      '<div class="meta">'+esc(x.autoridad||"")+(x.responsable_nombre?' · '+esc(x.responsable_nombre):'')+'</div>'+
+      doc+(lk.length?'<div class="lk">'+lk.join("")+'</div>':'')+'</div>';
+  }).join("")||'<div class="nota">Sin trámites en este filtro.</div>';
+}
+function setFiltro(f){FILTRO=f;renderTramites();}
+
+function renderPins(){
+  var sheet={};tabla("LOTES").forEach(function(l){sheet[l.lote_id]=l;});
+  var esc0=(DATA.resumen&&DATA.resumen.escalon_logrado);
+  var precioAct=null;var h=tabla("HITOS");for(var i=0;i<h.length;i++){if(clase(h[i].estado)!=="verde"){precioAct=h[i].precio_m2;break;}}
+  $("pins").innerHTML=LOTES_GEO.map(function(l){
+    var col=STATUS_COL[l.status]||"#a4be90";var big=(l.uso==="COMERCIAL")?" big":"";
+    return '<div class="pin'+big+'" style="left:'+l.x+'%;top:'+l.y+'%;background:'+col+'" '+
+      'onclick="verLote('+l.n+','+l.m2+',\''+l.uso+'\',\''+l.status+'\','+(precioAct||0)+')">'+l.n+'</div>';
+  }).join("");
+  $("loteHint").innerHTML='Toca un lote para ver su tamaño y precio. El precio por m² es el del escalón actual del desarrollo (los lotes aún <b>no son enajenables</b> hasta liberar la hipoteca e inscribir el régimen).';
+}
+function verLote(n,m2,uso,status,precio){
+  var esCom=uso==="COMERCIAL";var pm=esCom?5250:precio;
+  var inv=(MODO==="inv");
+  var body='<span class="x" onclick="cerrar()">×</span><h3>Lote '+n+'</h3>'+
+    '<div class="nota">'+(esCom?"Comercial · venta directa":"Habitacional")+' · '+m2.toLocaleString("es-MX")+' m²</div>';
+  if(inv){body+='<div style="margin-top:10px;font-size:14px;">Precio por m² (escalón actual): <b>'+money(pm)+'</b><br>'+
+    'Estimado del lote: <b>'+money(Math.round(pm*m2))+'</b></div>';}
+  body+='<div class="hint" style="margin-top:12px;">Estado: '+({available:"Disponible",reserved:"Reservado",sold:"Vendido",commercial:"Comercial"}[status]||status)+
+    '. No enajenable hasta liberar hipoteca BBVA + inscribir régimen condominal.</div>';
+  $("modalBox").innerHTML=body;$("ov").className="ov on";
+}
+
+function renderBitacora(){
+  var b=tabla("BITACORA").slice().reverse();
+  $("bitacora").innerHTML=b.map(function(x){
+    var tg=String(x.tipo||"avance").toLowerCase();
+    var v=x.video_url?(' <a class="vlink" href="'+esc(x.video_url)+'" target="_blank">▶ ver</a>'):'';
+    return '<div class="bita"><div class="fch">'+esc(x.fecha)+'</div><div>'+
+      '<h4>'+esc(x.titulo)+v+'</h4><div class="d">'+esc(x.descripcion)+'</div>'+
+      '<span class="tg '+tg+'">'+esc(x.tipo||"avance")+'</span></div></div>';
+  }).join("")||'<div class="nota">Sin avances aún.</div>';
+}
+
+function renderDocs(){
+  var d=tabla("DOCS").filter(function(x){return /si/i.test(String(x.es_vigente))&&!/no/i.test(String(x.es_vigente).slice(0,3))||/^si/i.test(String(x.es_vigente));});
+  // vigentes: es_vigente empieza con "SI"
+  d=tabla("DOCS").filter(function(x){return /^si/i.test(String(x.es_vigente||"").trim());});
+  $("docs").innerHTML=d.map(function(x){
+    var url=x.doc_id?("https://drive.google.com/file/d/"+x.doc_id+"/view"):"";
+    var t=url?('<a href="'+esc(url)+'" target="_blank">'+esc(x.titulo)+'</a>'):esc(x.titulo);
+    return '<div class="docrow"><span>'+t+'</span><span class="cat">'+esc(x.categoria||"")+'</span></div>';
+  }).join("")||'<div class="nota">Sin documentos marcados como vigentes.</div>';
+}
+
+/* ============ dinero (fin-gated) ============ */
+function renderDinero(){
+  if(!FIN){
+    $("dinero").innerHTML='<div class="finlock"><div class="nota" style="margin-bottom:8px;">Los montos son sensibles. Escribe la clave financiera para verlos.</div>'+
+      '<input id="finKey" type="password" placeholder="Clave financiera" autocomplete="off"> <button class="btn" onclick="abrirFin()">Ver dinero</button></div>';
+    return;
+  }
+  var r=(DATA.resumen&&DATA.resumen.costos)||{};
+  var pg=r.pagado||0,tot=r.presupuesto||0;var pct=tot?Math.round(pg/tot*100):0;
+  var costos=tabla("COSTOS");
+  var filas=costos.map(function(c){return '<div class="docrow"><span>'+esc(c.concepto)+'</span><span>'+money(c.presupuesto)+(c.pagado?' · pagado '+money(c.pagado):'')+'</span></div>';}).join("");
+  $("dinero").innerHTML='<div style="font-size:13px;">Presupuesto total <b>'+money(tot)+'</b> · Pagado <b>'+money(pg)+'</b> ('+pct+'%)</div>'+
+    '<div class="bar"><div class="pg" style="flex:'+Math.max(pct,4)+'">'+pct+'%</div><div class="pf">por pagar '+money(tot-pg)+'</div></div>'+
+    '<div style="margin-top:12px;">'+filas+'</div>';
+}
+function abrirFin(){
+  var k=($("finKey").value||"").trim();if(!k){toast("Escribe la clave",true);return;}
+  var url=CONFIG.SHEET_URL+"?recurso=board&fin="+encodeURIComponent(k)+"&cb="+Date.now();
+  fetch(url).then(function(r){return r.json();}).then(function(j){
+    if(j&&j.meta&&j.meta.incluye_financiero){DATA=j;FIN=k;render();toast("Dinero desbloqueado");}
+    else toast("Clave financiera incorrecta",true);
+  }).catch(function(){toast("Error de conexión",true);});
+}
+
+/* ============ registrar avance (write) ============ */
+function abrirAvance(){
+  $("modalBox").innerHTML='<span class="x" onclick="cerrar()">×</span><h3>Registrar avance</h3>'+
+    '<div class="nota">Se agrega a la bitácora del Sheet.</div>'+
+    '<input id="avT" placeholder="Título" style="width:100%;margin-top:10px;border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;">'+
+    '<textarea id="avD" placeholder="Descripción" style="width:100%;margin-top:8px;border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;height:64px;"></textarea>'+
+    '<input id="avV" placeholder="URL de video (opcional)" style="width:100%;margin-top:8px;border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;">'+
+    '<input id="avK" type="password" placeholder="Clave de escritura" style="width:100%;margin-top:8px;border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;">'+
+    '<div style="margin-top:12px;text-align:right;"><button class="btn" onclick="postAvance()">Guardar</button></div>';
+  $("ov").className="ov on";
+}
+function postAvance(){
+  var t=($("avT").value||"").trim();if(!t){toast("Falta el título",true);return;}
+  var hoy=new Date().toISOString().slice(0,10);
+  var payload={tipo:"bitacora",secret:($("avK").value||"").trim(),request_id:"web-"+Date.now(),
+    fecha:hoy,titulo:t,descripcion:($("avD").value||"").trim(),video_url:($("avV").value||"").trim(),tipo_avance:"avance"};
+  fetch(CONFIG.SHEET_URL,{method:"POST",body:JSON.stringify(payload)}).then(function(r){return r.json();}).then(function(j){
+    if(j&&j.ok!==false){cerrar();toast("Avance guardado");setTimeout(function(){fetchBoard(false);},900);}
+    else toast((j&&j.error)||"Rechazado",true);
+  }).catch(function(){toast("Error de conexión",true);});
+}
+
+function cerrar(){$("ov").className="ov";}
+$("ov").addEventListener("click",function(e){if(e.target===this)cerrar();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")cerrar();});
+
+/* ============ boot ============ */
+if(desbloqueado())iniciar();
+</script>
+</body>
+</html>
