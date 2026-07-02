@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Dirección · Real de Miramar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/estilo.css">
+</head>
+<body>
+<div id="nav"></div>
+<main id="app">
+
+  <h2 class="sec">Pulso de dirección</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <h2 class="sec">Quién lo tiene</h2>
+  <div class="card">
+    <div id="quienBarras"></div>
+    <div id="quienLista"></div>
+  </div>
+
+  <h2 class="sec">Ruta crítica en 2 carriles</h2>
+  <div class="card">
+    <div id="carriles"></div>
+    <div class="nota" id="bandaNota" style="margin-top:10px;"></div>
+  </div>
+
+  <h2 class="sec">Riesgos</h2>
+  <div class="card" id="riesgos"></div>
+
+  <h2 class="sec">Condicionales</h2>
+  <div class="card" id="condicionales"></div>
+
+  <h2 class="sec">Dinero</h2>
+  <div class="hint" id="dinero"></div>
+
+  <h2 class="sec">Registrar avance</h2>
+  <div class="card">
+    <div class="nota" style="margin-bottom:10px;">El avance se guarda en la bitácora del Sheet Maestro. Requiere la clave de escritura.</div>
+    <button class="btn ghost" id="btnAvance" type="button">＋ Registrar avance en bitácora</button>
+  </div>
+
+</main>
+<footer>Real de Miramar · tablero del proyecto — datos administrados desde el Google Sheet Maestro.<div id="stamp" style="margin-top:4px;"></div></footer>
+<script src="assets/board.js"></script>
+<script>
+(function(){
+"use strict";
+
+var selResp=null; /* responsable seleccionado en "quién lo tiene" (persiste entre renders) */
+
+function esSi(v){return /^si/i.test(String(v||"").trim());}
+function noVerde(t){return Board.clase(t.estado)!=="verde";}
+function esCond(t){return String(t.ola||"").trim().toUpperCase()==="COND";}
+function sinDecidir(t){var d=String(t.decision||"").trim();return d===""||/pendiente/i.test(d);}
+function respDe(t){
+  var r=String(t.responsable_nombre||"").split("/")[0].trim();
+  return r||"(sin responsable)";
+}
+function corto(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s;}
+
+window.renderPage=function(B){
+  var tram=B.tabla("TRAMITES");
+  var riesgos=B.tabla("RIESGOS");
+
+  /* ---------- 1. KPIs ---------- */
+  var urgNoVerdes=tram.filter(function(t){return esSi(t.urgente)&&noVerde(t);}).length;
+
+  var ea=B.etapaActual(), gatesTxt="—", gatesSub="";
+  if(ea.cur){
+    var gates=B.gatesDe(ea.cur.hito_id);
+    var cerrados=gates.filter(function(t){return B.clase(t.estado)==="verde";}).length;
+    gatesTxt=cerrados+" / "+gates.length;
+    gatesSub=B.esc(ea.cur.nombre||"");
+  }
+
+  var riesgosAbiertos=riesgos.filter(function(r){
+    return String(r.estado||"").toLowerCase().indexOf("abierto")>=0;
+  }).length;
+
+  var condPend=tram.filter(function(t){return esCond(t)&&sinDecidir(t);}).length;
+
+  B.$("kpis").innerHTML=
+    '<div class="kpi"><div class="k">Urgentes no verdes</div><div class="v">'+urgNoVerdes+'</div></div>'+
+    '<div class="kpi"><div class="k">Gates cerrados · etapa actual</div><div class="v">'+B.esc(gatesTxt)+'</div>'+
+      (gatesSub?'<div class="nota">'+gatesSub+'</div>':"")+'</div>'+
+    '<div class="kpi"><div class="k">Riesgos abiertos</div><div class="v">'+riesgosAbiertos+'</div></div>'+
+    '<div class="kpi"><div class="k">Condicionales sin decidir</div><div class="v">'+condPend+'</div></div>';
+
+  /* ---------- 2. QUIÉN LO TIENE ---------- */
+  var pend=tram.filter(noVerde);
+  var porResp={};
+  pend.forEach(function(t){
+    var r=respDe(t);
+    (porResp[r]=porResp[r]||[]).push(t);
+  });
+  var nombres=Object.keys(porResp).sort(function(a,b){return porResp[b].length-porResp[a].length;});
+
+  function pintarListaResp(){
+    var box=B.$("quienLista");
+    if(!selResp||!porResp[selResp]){box.innerHTML="";return;}
+    var filas=porResp[selResp].map(function(t){
+      var cl=B.clase(t.estado);
+      return '<div class="docrow"><div>'+
+        (esSi(t.urgente)?'<span class="olab warn">URGENTE</span>':"")+
+        B.esc(t.nombre||t.tramite_id)+'</div>'+
+        '<div><span class="olab '+(cl==="rojo"?"warn":"")+'">'+B.esc(t.estado||"—")+'</span> '+
+        '<a href="tramites.html#'+encodeURIComponent(String(t.tramite_id||""))+'">ficha</a></div></div>';
+    }).join("");
+    box.innerHTML='<div style="margin-top:12px;"><div class="nota" style="margin-bottom:4px;">Pendientes de <b>'+B.esc(selResp)+'</b> · toca otra barra para cambiar</div>'+filas+'</div>';
+  }
+
+  if(!nombres.length){
+    B.$("quienBarras").innerHTML='<div class="nota">No hay trámites pendientes: todo el tablero está en verde.</div>';
+    B.$("quienLista").innerHTML="";
+  }else{
+    var max=porResp[nombres[0]].length;
+    B.$("quienBarras").innerHTML=nombres.map(function(n,i){
+      var lst=porResp[n];
+      var urg=lst.filter(function(t){return esSi(t.urgente);}).length;
+      var w=Math.max(6,Math.round(lst.length/max*100));
+      return '<div class="hbar" data-resp="'+i+'" style="cursor:pointer;" title="Ver pendientes de '+B.esc(n)+'">'+
+        '<span class="nom">'+B.esc(n)+'</span>'+
+        '<span class="pista"><i style="width:'+w+'%;"></i></span>'+
+        '<span>'+lst.length+' trámite'+(lst.length===1?"":"s")+'</span>'+
+        (urg?'<span style="color:var(--rojo);font-weight:600;">'+urg+' urgente'+(urg===1?"":"s")+'</span>':"")+
+        '</div>';
+    }).join("");
+    /* listeners locales a los nodos recién creados (no globales: no se duplican) */
+    var barras=B.$("quienBarras").getElementsByClassName("hbar");
+    Array.prototype.forEach.call(barras,function(el){
+      el.onclick=function(){
+        var n=nombres[Number(el.getAttribute("data-resp"))];
+        selResp=(selResp===n)?null:n;
+        pintarListaResp();
+      };
+    });
+    if(selResp&&!porResp[selResp])selResp=null;
+    pintarListaResp();
+  }
+
+  /* ---------- 3. RUTA CRÍTICA EN 2 CARRILES ---------- */
+  function carrilHTML(etq,clave){
+    var lst=tram.filter(function(t){return String(t.ruta_critica||"").trim().toLowerCase()===clave;})
+      .sort(function(a,b){
+        var fa=String(a.fecha_inicio_est||""),fb=String(b.fecha_inicio_est||"");
+        if(!fa&&!fb)return 0;if(!fa)return 1;if(!fb)return -1;
+        return fa<fb?-1:(fa>fb?1:0);
+      });
+    if(!lst.length)return '<div class="carril"><span class="et">'+B.esc(etq)+'</span><span class="nota">sin trámites en este carril.</span></div>';
+    var nodos=lst.map(function(t){
+      var cl=B.clase(t.estado);
+      return '<span class="nodo '+cl+'" title="'+B.esc(t.nombre||"")+'"><b>'+B.esc(t.tramite_id||"")+'</b> '+
+        B.esc(corto(t.nombre,26))+' · <span style="opacity:.8;">'+B.esc(B.fmtEta(B.etaDe(t)))+'</span></span>';
+    }).join('<span class="flecha">→</span>');
+    return '<div class="carril"><span class="et">'+B.esc(etq)+'</span>'+nodos+'</div>';
+  }
+  B.$("carriles").innerHTML=carrilHTML("Banco","banco")+carrilHTML("Física","fisica");
+  var banda=B.config("banda_tiempos");
+  B.$("bandaNota").textContent=banda||"";
+
+  /* ---------- 4. RIESGOS ---------- */
+  function rankImpacto(v){
+    var s=String(v||"").toLowerCase();
+    if(s.indexOf("muy alto")>=0)return 0;
+    if(s.indexOf("alto")>=0)return 1;
+    if(s.indexOf("medio")>=0)return 2;
+    return 3;
+  }
+  function esUrgenteR(r){return /urgente/i.test(String(r.estado||"")+" "+String(r.notas||""));}
+  if(!riesgos.length){
+    B.$("riesgos").innerHTML='<div class="nota">No hay riesgos registrados en el Sheet.</div>';
+  }else{
+    var rs=riesgos.slice().sort(function(a,b){
+      var ua=esUrgenteR(a)?0:1, ub=esUrgenteR(b)?0:1;
+      if(ua!==ub)return ua-ub;
+      return rankImpacto(a.impacto)-rankImpacto(b.impacto);
+    });
+    B.$("riesgos").innerHTML=rs.map(function(r){
+      var urg=esUrgenteR(r);
+      return '<div class="docrow"><div style="flex:1;min-width:220px;">'+
+        '<b>'+B.esc(r.riesgo_id||"")+'</b>'+(urg?' <span class="olab warn">URGENTE</span>':"")+' '+B.esc(r.descripcion||"")+
+        (r.mitigacion?'<div class="nota">Mitigación: '+B.esc(r.mitigacion)+'</div>':"")+'</div>'+
+        '<div><span class="olab">'+B.esc(r.probabilidad||"—")+' · '+B.esc(r.impacto||"—")+'</span>'+
+        (r.dueno?' <span class="nota">'+B.esc(r.dueno)+'</span>':"")+'</div></div>';
+    }).join("");
+  }
+
+  /* ---------- 5. CONDICIONALES ---------- */
+  var conds=tram.filter(esCond);
+  if(!conds.length){
+    B.$("condicionales").innerHTML='<div class="nota">No hay trámites condicionales en el Sheet.</div>';
+  }else{
+    B.$("condicionales").innerHTML=conds.map(function(t){
+      var d=String(t.decision||"").trim();
+      var pendD=sinDecidir(t);
+      return '<div class="docrow"><div style="flex:1;min-width:220px;"><b>'+B.esc(t.nombre||t.tramite_id)+'</b>'+
+        (t.por_que_importa?'<div class="nota">'+B.esc(t.por_que_importa)+'</div>':"")+'</div>'+
+        '<div><span class="olab '+(pendD?"warn":"")+'">'+B.esc(pendD?(d||"pendiente"):d)+'</span></div></div>';
+    }).join("");
+  }
+
+  /* ---------- 6. DINERO ---------- */
+  B.$("dinero").innerHTML='Las cuentas del proyecto viven en su propia página: <a href="cuentas.html">abrir Cuentas</a>. Aquí no se duplican montos.';
+
+  /* ---------- 7. REGISTRAR AVANCE ---------- */
+  B.$("btnAvance").onclick=function(){
+    B.modal(
+      '<h3>Registrar avance</h3>'+
+      '<div class="nota">Se publica en la bitácora del proyecto. La clave de escritura la valida el servidor.</div>'+
+      '<input id="avTitulo" type="text" placeholder="Título del avance" autocomplete="off">'+
+      '<textarea id="avDesc" rows="3" placeholder="Descripción (qué se logró y por qué importa)"></textarea>'+
+      '<input id="avUrl" type="text" placeholder="URL de video (opcional)" autocomplete="off">'+
+      '<input id="avKey" type="password" placeholder="Clave de escritura" autocomplete="off">'+
+      '<button class="btn" id="avGuardar" style="width:100%;margin-top:12px;">Guardar</button>'
+    );
+    B.$("avGuardar").onclick=function(){
+      var titulo=(B.$("avTitulo").value||"").trim();
+      var desc=(B.$("avDesc").value||"").trim();
+      var url=(B.$("avUrl").value||"").trim();
+      var clave=(B.$("avKey").value||"").trim();
+      if(!titulo){B.toast("Escribe un título",true);return;}
+      if(!clave){B.toast("Falta la clave de escritura",true);return;}
+      var btn=B.$("avGuardar");btn.disabled=true;btn.textContent="Guardando…";
+      B.post({tipo:"bitacora",secret:clave,titulo:titulo,descripcion:desc,video_url:url,tipo_avance:"avance"},function(err,j){
+        if(err||!j||j.error||j.ok===false){
+          btn.disabled=false;btn.textContent="Guardar";
+          B.toast("No se pudo guardar"+(j&&j.error?": "+j.error:""),true);
+        }else{
+          B.cerrarModal();
+          B.toast("Avance registrado");
+          B.refrescar();
+        }
+      });
+    };
+  };
+
+  /* ---------- stamp ---------- */
+  B.$("stamp").textContent="Actualizado: "+(B.meta().actualizado?new Date(B.meta().actualizado).toLocaleString("es-MX"):"—");
+};
+
+Board.init({page:"direccion",acceso:"fin",sub:"direccion · solo operador"});
+})();
+</script>
+</body>
+</html>
