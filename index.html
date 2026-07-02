@@ -126,6 +126,31 @@ h2.sec:first-child{margin-top:8px;}
 body.inv .modo-ninos-hide{display:block;}
 body.inv .modo-inv-hide{display:none;}
 .hint{background:var(--arena);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--carbon);margin-top:8px;}
+/* HERO ETAPA */
+.hero{margin-top:10px;padding:18px 20px;border-left:6px solid var(--amar);}
+.hero .et{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--piedra);}
+.hero .tit{font-family:Kefa-Regular,Georgia,serif;font-size:26px;line-height:1.15;margin:2px 0 4px;}
+.hero .sub{font-size:13px;color:var(--carbon);}
+.hero .row{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:10px;}
+.hero .big{font-family:Kefa-Regular,Georgia,serif;font-size:22px;}
+.hero .gbar{flex:1;min-width:180px;}
+.hero .lockline{margin-top:10px;font-size:12.5px;color:var(--rojo);}
+/* ALERTAS */
+.alertas{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-top:12px;}
+.alerta{background:#fff;border:1px solid var(--rojo);border-left:6px solid var(--rojo);border-radius:9px;padding:11px 13px;}
+.alerta .tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--rojo);font-weight:600;}
+.alerta h4{margin:3px 0 3px;font-size:13px;line-height:1.25;}
+.alerta .why{font-size:11.5px;color:var(--carbon);}
+/* TIRA NARRATIVA */
+.tira{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+.tira .col{background:#fff;border:1px solid var(--linea);border-radius:10px;padding:13px 15px;border-top:4px solid var(--piedra);}
+.tira .col.h{border-top-color:var(--verde);} .tira .col.e{border-top-color:var(--amar);} .tira .col.s{border-top-color:var(--negro);}
+.tira .col h3{margin:0 0 6px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--carbon);display:flex;justify-content:space-between;}
+.tira .it{padding:6px 0;border-bottom:1px dashed var(--linea);font-size:12.5px;line-height:1.35;}
+.tira .it:last-child{border-bottom:0;}
+.tira .it .why{font-size:11px;color:var(--piedra);display:block;margin-top:1px;}
+/* OLA BADGE */
+.olab{display:inline-block;font-size:9px;letter-spacing:.5px;border:1px solid var(--linea);border-radius:9px;padding:1px 7px;color:var(--carbon);background:var(--arena);margin-right:5px;}
 footer{max-width:1000px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra);font-size:11px;text-align:center;}
 </style>
 </head>
@@ -160,15 +185,28 @@ footer{max-width:1000px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra)
 
 <main id="app" style="display:none;">
 
+  <div class="card hero" id="hero"></div>
+
+  <div id="alertas"></div>
+
+  <h2 class="sec">La escalera de precios · dónde vamos</h2>
+  <div class="card">
+    <div id="escaleraHint" style="font-size:13.5px;margin-bottom:6px;"></div>
+    <div class="escalera" id="escalera"></div>
+    <div class="nota" style="margin-top:6px;">Cada etapa es un paquete de trámites: el trámite vive en la etapa donde se trabaja, y al cerrar el paquete completo se desbloquea el precio de la siguiente.</div>
+  </div>
+
+  <h2 class="sec">La historia · hicimos / empujamos / sigue</h2>
+  <div class="tira" id="tira"></div>
+
   <h2 class="sec">Puerta legal · ¿se puede vender ya?</h2>
   <div id="gateBanner"></div>
   <div class="puertas" id="puertas"></div>
 
-  <h2 class="sec">La escalera de valor</h2>
-  <div class="card">
-    <div id="escaleraHint" class="modo-inv-hide" style="font-size:13.5px;margin-bottom:6px;"></div>
-    <div class="escalera" id="escalera"></div>
-    <div class="nota" style="margin-top:6px;">Cada escalón lo desbloquea un permiso. <span class="modo-ninos-hide">El precio por m² sube en cada paso.</span></div>
+  <h2 class="sec">Mapa de dependencias · cómo se conecta todo</h2>
+  <div class="card" style="overflow-x:auto;">
+    <div id="grafoHint" style="font-size:13px;margin-bottom:8px;line-height:1.55;"></div>
+    <div id="grafo" style="min-width:640px;"></div>
   </div>
 
   <h2 class="sec">¿Cómo vamos? · de un vistazo</h2>
@@ -193,6 +231,9 @@ footer{max-width:1000px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra)
 
   <h2 class="sec">Bitácora de avances</h2>
   <div class="feed" id="bitacora"></div>
+
+  <h2 class="sec">Pendientes de decisión · condicionales</h2>
+  <div class="card" id="condicionales"></div>
 
   <div class="modo-ninos-hide">
     <h2 class="sec">Dinero · presupuesto y pagos</h2>
@@ -290,19 +331,97 @@ function setModo(m){MODO=m;document.body.className=(m==="inv"?"inv":"");
 
 /* ============ render ============ */
 function tabla(n){return (DATA&&DATA.tablas&&DATA.tablas[n])||[];}
+var PVH=false; /* preventa habilitada (calculada del CUMPLIMIENTO) */
+
+/* etapa actual = primer hito no verde; gates del paquete = TRAMITES con paquete_etapa==hito_id y gate=si */
+function hitosOrd(){return tabla("HITOS").slice().sort(function(a,b){return (a.orden||0)-(b.orden||0);});}
+function etapaActual(){var h=hitosOrd();for(var i=0;i<h.length;i++){if(clase(h[i].estado)!=="verde")return{cur:h[i],next:h[i+1]||null,idx:i,todos:h};}return{cur:null,next:null,idx:-1,todos:h};}
+function gatesDe(hid){return tabla("TRAMITES").filter(function(t){return String(t.paquete_etapa||"")===String(hid)&&/^si/i.test(String(t.gate||""));});}
+
+/* puertas legales calculadas del CUMPLIMIENTO (tolerante a 'semaforo' o 'estado') */
+function puertasCalc(){
+  var rank={verde:3,amar:2,rojo:1},inv={3:"verde",2:"amarillo",1:"rojo"},m={},vis={};
+  tabla("CUMPLIMIENTO").forEach(function(c){
+    var item=String(c.item||"").trim();if(!item)return;
+    var s=clase(c.semaforo||c.estado);var v=(s==="verde")?3:(s==="amar")?2:1;
+    if(!(item in m)||v<m[item])m[item]=v;
+    if(/^no/i.test(String(c.visible_publico||"")))vis[item]=false;
+  });
+  return Object.keys(m).map(function(k){return{puerta:k,estado:inv[m[k]],publica:vis[k]!==false};});
+}
+
 function render(){
   var r=DATA.resumen||{};
-  renderPuertas(r);renderEscalera(r);renderKpis(r);renderTramites();renderPins();renderBitacora();renderDocs();renderDinero();
+  var ps=puertasCalc();
+  PVH=ps.length>0&&ps.every(function(p){return p.estado==="verde";});
+  renderHero();renderAlertas();renderTira();renderPuertas(ps);renderGrafo(r);renderEscalera(r);renderKpis(r);renderTramites();renderPins();renderBitacora();renderCond();renderDocs();renderDinero();
   var meta=DATA.meta||{};$("stamp").textContent="Actualizado: "+(meta.actualizado?new Date(meta.actualizado).toLocaleString("es-MX"):"—")+(meta.incluye_financiero?" · financiero abierto":"");
 }
 
-function renderPuertas(r){
-  var ps=r.puertas_legales||[];
-  var abierta=!!r.preventa_habilitada;
+/* HERO: etapa actual + paquete de gates + siguiente salto */
+function renderHero(){
+  var e=etapaActual(),inv=(MODO==="inv");
+  if(!e.cur){$("hero").innerHTML='<div class="tit serif">Proyecto completado</div>';return;}
+  var g=gatesDe(e.cur.hito_id),gv=g.filter(function(t){return clase(t.estado)==="verde";}).length;
+  var pct=g.length?Math.round(gv/g.length*100):0;
+  var precio=inv?('<div><div class="et">Precio de esta etapa</div><div class="big">'+money(e.cur.precio_m2)+'/m²</div></div>'):'';
+  var salto='';
+  if(e.next){
+    var d=(inv&&Number(e.cur.precio_m2)>0)?(' <b>(+'+Math.round((Number(e.next.precio_m2)-Number(e.cur.precio_m2))/Number(e.cur.precio_m2)*100)+'%)</b>'):'';
+    salto='<div><div class="et">Al cerrar el paquete</div><div style="font-size:13px;">sube a <b>'+esc(e.next.nombre)+'</b>'+(inv?(' · '+money(e.next.precio_m2)+'/m²'):'')+d+'</div></div>';
+  }
+  var lock=PVH?'' :'<div class="lockline">🔒 Aún no se puede vender: hay puertas legales pendientes (BBVA, PROFECO…). Ver "Puerta legal".</div>';
+  $("hero").innerHTML='<div class="et">Etapa actual del desarrollo</div>'+
+    '<div class="tit">'+esc(e.cur.nombre)+'</div>'+
+    '<div class="sub">'+esc(String(e.cur.justificacion_salto||"").split(":")[0])+'</div>'+
+    '<div class="row">'+precio+
+    '<div class="gbar"><div class="et">Paquete de esta etapa · '+gv+' de '+g.length+' gates cerrados</div>'+
+    '<div class="progress" style="margin-top:5px;"><i style="width:'+pct+'%"></i></div></div>'+salto+'</div>'+lock;
+}
+
+/* FRANJA DE ALERTAS: urgente=si y no-verde */
+function renderAlertas(){
+  var u=tabla("TRAMITES").filter(function(t){return /^si/i.test(String(t.urgente||""))&&clase(t.estado)!=="verde";});
+  if(!u.length){$("alertas").innerHTML="";return;}
+  $("alertas").innerHTML='<div class="alertas">'+u.map(function(t){
+    return '<div class="alerta"><span class="tag">Urgente</span><h4>'+esc(t.nombre)+'</h4>'+
+      '<div class="why">'+esc(t.responsable_nombre||"")+'</div>'+
+      (t.por_que_importa?'<div class="why" style="margin-top:3px;">'+esc(String(t.por_que_importa).slice(0,110))+'…</div>':'')+'</div>';
+  }).join("")+'</div>';
+}
+
+/* TIRA NARRATIVA: hicimos / empujamos / sigue */
+function renderTira(){
+  var t=tabla("TRAMITES");
+  var hechos=t.filter(function(x){return clase(x.estado)==="verde";});
+  var emp=t.filter(function(x){return clase(x.estado)==="amar";});
+  var e=etapaActual();
+  var sig=t.filter(function(x){return clase(x.estado)==="rojo"&&String(x.paquete_etapa||"")===(e.cur?String(e.cur.hito_id):"")&&String(x.ola)==="1";});
+  if(sig.length<3)sig=sig.concat(t.filter(function(x){return clase(x.estado)==="rojo"&&String(x.paquete_etapa||"")===(e.cur?String(e.cur.hito_id):"")&&String(x.ola)!=="1";})).slice(0,4);
+  function items(arr,n){return arr.slice(0,n).map(function(x){
+    return '<div class="it"><b>'+esc(x.nombre)+'</b>'+(x.por_que_importa?'<span class="why">'+esc(String(x.por_que_importa).slice(0,90))+'</span>':'')+'</div>';}).join("")||'<div class="nota">—</div>';}
+  $("tira").innerHTML=
+    '<div class="col h"><h3>Ya lo hicimos <span>'+hechos.length+'</span></h3>'+items(hechos.slice().reverse(),4)+'</div>'+
+    '<div class="col e"><h3>Lo estamos empujando <span>'+emp.length+'</span></h3>'+items(emp,4)+'</div>'+
+    '<div class="col s"><h3>Sigue ahora <span>'+sig.length+'</span></h3>'+items(sig,4)+'</div>';
+}
+
+/* CONDICIONALES */
+function renderCond(){
+  var c=tabla("TRAMITES").filter(function(t){return String(t.ola||"").toUpperCase()==="COND";});
+  if(!c.length){$("condicionales").innerHTML='<div class="nota">Sin condicionales pendientes.</div>';return;}
+  $("condicionales").innerHTML='<div class="nota" style="margin-bottom:8px;">Trámites que podrían no ser necesarios — Alejandro decide si se contemplan o se descartan (columna <b>decision</b> del Sheet).</div>'+
+    c.map(function(t){return '<div class="docrow"><span><b>'+esc(t.nombre)+'</b><br><span class="nota">'+esc(String(t.por_que_importa||"").slice(0,120))+'</span></span><span class="cat">'+esc(t.decision||"pendiente")+'</span></div>';}).join("");
+}
+
+function renderPuertas(ps){
+  var abierta=PVH;
+  var vis=(MODO==="inv")?ps:ps.filter(function(p){return p.publica;});
+  var verdes=ps.filter(function(p){return p.estado==="verde";}).length;
   $("gateBanner").innerHTML='<div class="gatebanner'+(abierta?' ok':'')+'">'+
     (abierta?'✅ <b>Puertas legales en verde.</b> La preventa puede activarse.':
-     '🔒 <b>Preventa bloqueada.</b> Faltan permisos: '+(r.puertas_verdes||0)+' de '+(r.puertas_total||ps.length)+' puertas en verde. Ningún lote se aparta ni cobra hasta liberar la hipoteca BBVA y registrar el contrato PROFECO.')+'</div>';
-  $("puertas").innerHTML=ps.map(function(p){
+     '🔒 <b>Preventa bloqueada.</b> '+verdes+' de '+ps.length+' puertas en verde. Ningún lote se aparta ni cobra hasta liberar la hipoteca BBVA y registrar el contrato PROFECO.')+'</div>';
+  $("puertas").innerHTML=vis.map(function(p){
     var c=clase(p.estado);var bbva=/bbva|hipoteca/i.test(p.puerta)?" bbva":"";
     return '<span class="puerta '+c+bbva+'"><span class="p"></span>'+esc(p.puerta)+'</span>';
   }).join("");
@@ -324,7 +443,8 @@ function renderEscalera(r){
       '<div class="nm">'+esc(s.nombre)+'</div>'+precio+pct+'</div>';
   }).join("");
   var here=h[hereIdx]||{};
-  $("escaleraHint").innerHTML='Vamos en <b>'+esc(here.nombre||"el inicio")+'</b>. Para subir al siguiente escalón falta: <b>'+esc(here.puerta_legal_requerida||"—")+'</b>.';
+  var g=gatesDe(here.hito_id||""),gv=g.filter(function(t){return clase(t.estado)==="verde";}).length;
+  $("escaleraHint").innerHTML='Vamos en <b>'+esc(here.nombre||"el inicio")+'</b> · paquete: <b>'+gv+' de '+g.length+'</b> gates cerrados. '+(h[hereIdx+1]?('Al cerrarlo se desbloquea <b>'+esc(h[hereIdx+1].nombre)+'</b>.'):'');
 }
 
 function renderKpis(r){
@@ -344,16 +464,27 @@ function renderTramites(){
   var t=tabla("TRAMITES");
   var conteo={todos:t.length,verde:0,amar:0,rojo:0};
   t.forEach(function(x){var c=clase(x.estado);if(conteo[c]!=null)conteo[c]++;});
-  var fs=[["todos","Todos ("+conteo.todos+")"],["verde","🟢 Hechos ("+conteo.verde+")"],["amar","🟡 En proceso ("+conteo.amar+")"],["rojo","🔴 Faltan ("+conteo.rojo+")"]];
+  function nOla(o){return t.filter(function(x){return String(x.ola||"")===o;}).length;}
+  var fs=[["todos","Todos ("+conteo.todos+")"],["verde","🟢 Hechos ("+conteo.verde+")"],["amar","🟡 En proceso ("+conteo.amar+")"],["rojo","🔴 Faltan ("+conteo.rojo+")"],
+          ["o1","① Ola 1 ("+nOla("1")+")"],["o2","② Ola 2 ("+nOla("2")+")"],["o3","③ Ola 3 ("+nOla("3")+")"],["o4","④ Ola 4 ("+nOla("4")+")"]];
   $("filtros").innerHTML=fs.map(function(f){return '<span class="chip'+(FILTRO===f[0]?' on':'')+'" onclick="setFiltro(\''+f[0]+'\')">'+f[1]+'</span>';}).join("");
   var vids={};tabla("VIDEOS").forEach(function(v){if(v.tramite_id)vids[v.tramite_id]=v.url;});
-  var rows=t.filter(function(x){return FILTRO==="todos"||clase(x.estado)===FILTRO;});
+  var rows=t.filter(function(x){
+    if(FILTRO==="todos")return true;
+    if(FILTRO.charAt(0)==="o")return String(x.ola||"")===FILTRO.slice(1);
+    return clase(x.estado)===FILTRO;
+  });
   $("tramites").innerHTML=rows.map(function(x){
     var c=clase(x.estado);var vid=vids[x.tramite_id];
     var doc=(x.oficio_folio&&String(x.oficio_folio).trim())?('<span class="meta">📄 '+esc(x.oficio_folio)+'</span>'):'';
     var lk=[];if(vid)lk.push('<a class="vlink" href="'+esc(vid)+'" target="_blank">▶ Video</a>');
+    var ola=String(x.ola||"");var olab=(ola&&ola!=="HECHO")?('<span class="olab">'+(ola==="COND"?"condicional":"ola "+ola)+'</span>'):'';
+    var gk=/^si/i.test(String(x.gate||""))?'<span class="olab" title="Cierra etapa">🔑 gate</span>':'';
+    var urg=/^si/i.test(String(x.urgente||""))&&c!=="verde"?'<span class="olab" style="border-color:var(--rojo);color:var(--rojo);">urgente</span>':'';
+    var paq=x.paquete_etapa?('<span class="olab">'+esc(x.paquete_etapa)+'</span>'):'';
     return '<div class="tcard '+c+'"><div class="st"><span class="p"></span>'+esc(x.estado)+'</div>'+
       '<h4>'+esc(x.nombre)+'</h4>'+
+      '<div style="margin:3px 0 2px;">'+olab+gk+urg+paq+'</div>'+
       '<div class="meta">'+esc(x.autoridad||"")+(x.responsable_nombre?' · '+esc(x.responsable_nombre):'')+'</div>'+
       doc+(lk.length?'<div class="lk">'+lk.join("")+'</div>':'')+'</div>';
   }).join("")||'<div class="nota">Sin trámites en este filtro.</div>';
@@ -372,7 +503,7 @@ function renderPins(){
   $("loteHint").innerHTML='Toca un lote para ver su tamaño y precio. El precio por m² es el del escalón actual del desarrollo (los lotes aún <b>no son enajenables</b> hasta liberar la hipoteca e inscribir el régimen).';
 }
 function verLote(n,m2,uso,status,precio){
-  var esCom=uso==="COMERCIAL";var pm=esCom?5250:precio;
+  var esCom=uso==="COMERCIAL";var pm=esCom?6500:precio;
   var inv=(MODO==="inv");
   var body='<span class="x" onclick="cerrar()">×</span><h3>Lote '+n+'</h3>'+
     '<div class="nota">'+(esCom?"Comercial · venta directa":"Habitacional")+' · '+m2.toLocaleString("es-MX")+' m²</div>';
@@ -454,6 +585,91 @@ function postAvance(){
 function cerrar(){$("ov").className="ov";}
 $("ov").addEventListener("click",function(e){if(e.target===this)cerrar();});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")cerrar();});
+
+/* ============ MATRIZ DE FLUJOS (grafo de dependencias) ============ */
+var GRAFO=[
+ {id:'aenp',label:'A en P',row:0,col:0,maps:['T01'],deps:[]},
+ {id:'docs',label:'Docs propietario',row:0,col:1,maps:['T23','T37'],deps:[]},
+ {id:'estu',label:'Topo + Hidro',row:1,col:0,maps:['T06','T07'],deps:[]},
+ {id:'meca',label:'Mecánica + vial',row:1,col:1,maps:['T04','T05'],deps:[]},
+ {id:'memo',label:'Memoria técnica',row:1,col:2,maps:['T29','T35'],deps:[]},
+ {id:'serv',label:'Factib. agua+luz',row:2,col:0,maps:['T08','T09','T38'],deps:[]},
+ {id:'dren',label:'Drenaje',row:2,col:1,maps:['T12'],deps:['meca']},
+ {id:'subd',label:'Subdivisión',row:3,col:0,maps:['T02'],deps:[]},
+ {id:'usos',label:'Uso de suelo',row:3,col:1,maps:['T03'],deps:['subd']},
+ {id:'rpps',label:'RPP subdivisión',row:3,col:2,maps:['T18','T36'],deps:['subd','docs']},
+ {id:'mia',label:'MIA municipal',row:3,col:3,maps:['T10'],deps:['meca','estu','memo','usos']},
+ {id:'pobr',label:'Permisos de obra',row:4,col:1,maps:['T13','T14','T15','T16','T30','T39'],deps:['subd']},
+ {id:'lice',label:'Licencia urbaniz.',row:4,col:2,maps:['T11','T31','T40','T41','T28'],deps:['mia','serv','dren','pobr','rpps']},
+ {id:'obra',label:'Obras',row:4,col:3,maps:['T17','T44','T45','T46','T50'],deps:['lice']},
+ {id:'prof',label:'PROFECO + Reina',row:5,col:0,maps:['T20','T32'],deps:['aenp']},
+ {id:'pld',label:'PLD',row:5,col:1,maps:['T21'],deps:[]},
+ {id:'bbva',label:'BBVA',row:5,col:2,maps:['T33','T34','T33b','T43'],deps:[],blocker:true},
+ {id:'regi',label:'Régimen RPP',row:5,col:3,maps:['T19','T47'],deps:['rpps','bbva']},
+ {id:'aven',label:'Autoriz. de venta',row:5,col:4,maps:['T42'],deps:['lice']},
+ {id:'vender',label:'VENDER',row:3,col:4,goal:true,maps:[],deps:['regi','bbva','prof','pld','lice','obra','aenp','aven']}
+];
+var CX=[128,250,372,494,600], RY=[80,132,184,236,288,340];
+var GCOL={verde:'#3f7a5f',amar:'#b07d3a',rojo:'#a8503f',gris:'#8b8782'};
+function gpos(n){ return {x:CX[n.col], y:(n.goal?210:RY[n.row])}; }
+function gEstado(n,byId){
+  if(n.goal) return PVH?'verde':'rojo';
+  var rank={gris:0,verde:1,amar:2,rojo:3}, worst='gris', any=false;
+  (n.maps||[]).forEach(function(id){var t=byId[id]; if(t){any=true; var c=clase(t.estado); if(rank[c]>rank[worst])worst=c;}});
+  return any?worst:'gris';
+}
+function bpt(cx1,cy1,cx2,cy2,hw,hh){var dx=cx2-cx1,dy=cy2-cy1; if(!dx&&!dy)return{x:cx2,y:cy2}; var sx=dx?hw/Math.abs(dx):1e9, sy=dy?hh/Math.abs(dy):1e9, s=Math.min(sx,sy); return {x:cx2-dx*s,y:cy2-dy*s};}
+function renderGrafo(r){
+  var tr=tabla('TRAMITES'), byId={}; tr.forEach(function(t){byId[t.tramite_id]=t;});
+  var nById={}; GRAFO.forEach(function(n){nById[n.id]=n;});
+  var st={}; GRAFO.forEach(function(n){st[n.id]=gEstado(n,byId);});
+  function done(id){return st[id]==='verde';}
+  function frontier(n){ if(n.goal||done(n.id))return false; return (n.deps||[]).every(function(d){return done(d);}); }
+  var edges='';
+  GRAFO.forEach(function(n){ var p=gpos(n); var thw=n.goal?33:54, thh=n.goal?75:13;
+    (n.deps||[]).forEach(function(d){ var dn=nById[d], dp=gpos(dn); var s=st[d];
+      var col,dash,mk; if(s==='verde'){col='#3f7a5f';dash='';mk='av';}
+      else if(dn.blocker){col='#a8503f';dash=' stroke-dasharray="5 3"';mk='ar';}
+      else {col='#8b8782';dash=' stroke-dasharray="4 3"';mk='ag';}
+      var a=bpt(p.x,p.y,dp.x,dp.y,54,13), b=bpt(dp.x,dp.y,p.x,p.y,thw+3,thh+3);
+      edges+='<line x1="'+a.x.toFixed(0)+'" y1="'+a.y.toFixed(0)+'" x2="'+b.x.toFixed(0)+'" y2="'+b.y.toFixed(0)+'" stroke="'+col+'" stroke-width="'+(s==='verde'?2:1.4)+'"'+dash+' opacity="0.85" marker-end="url(#'+mk+')"/>';
+    });
+  });
+  var nodes='';
+  GRAFO.forEach(function(n){ var p=gpos(n); var c=st[n.id];
+    if(n.goal){ var lab=(c==='verde')?'¡a vender!':'aún no';
+      nodes+='<g style="cursor:pointer" onclick="verNodo(\''+n.id+'\')"><rect x="'+(p.x-33)+'" y="135" width="66" height="150" rx="10" fill="#1a1818"/><text x="'+p.x+'" y="205" text-anchor="middle" font-family="Kefa-Regular,Georgia,serif" font-size="15" fill="#fff">VENDER</text><text x="'+p.x+'" y="224" text-anchor="middle" font-family="Poppins,sans-serif" font-size="10" fill="#c9b7a0">'+lab+'</text></g>'; return; }
+    nodes+='<g style="cursor:pointer" onclick="verNodo(\''+n.id+'\')">';
+    if(frontier(n)){ nodes+='<rect x="'+(p.x-58)+'" y="'+(p.y-17)+'" width="116" height="34" rx="9" fill="none" stroke="#1a1818" stroke-width="2.4"/><text x="'+p.x+'" y="'+(p.y-21)+'" text-anchor="middle" font-family="Poppins,sans-serif" font-size="10.5" fill="#1a1818">AHORA</text>'; }
+    nodes+='<rect x="'+(p.x-54)+'" y="'+(p.y-13)+'" width="108" height="26" rx="7" fill="'+GCOL[c]+'"'+(n.blocker?' stroke="#1a1818" stroke-width="2"':'')+'/>';
+    nodes+='<text x="'+p.x+'" y="'+(p.y+4)+'" text-anchor="middle" font-family="Poppins,sans-serif" font-size="11" fill="#fff">'+esc(n.label)+'</text>';
+    if(n.blocker){ nodes+='<text x="'+p.x+'" y="'+(p.y+26)+'" text-anchor="middle" font-family="Poppins,sans-serif" font-size="10" fill="#a8503f">frena la venta</text>'; }
+    nodes+='</g>';
+  });
+  var rl=['Sociedad','Estudios','Servicios','Ambiental','Obra','Venta·legal'];
+  var labs=rl.map(function(t,i){return '<text x="4" y="'+(RY[i]+4)+'" font-family="Poppins,sans-serif" font-size="10.5" fill="#8b8782">'+t+'</text>';}).join('');
+  $('grafo').innerHTML='<svg width="100%" viewBox="0 0 680 380" role="img" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs><marker id="ag" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0 0 L7 4 L0 8 Z" fill="#8b8782"/></marker>'+
+    '<marker id="av" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0 0 L7 4 L0 8 Z" fill="#3f7a5f"/></marker>'+
+    '<marker id="ar" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0 0 L7 4 L0 8 Z" fill="#a8503f"/></marker></defs>'+
+    labs+edges+nodes+'</svg>';
+  var ah=GRAFO.filter(function(n){return frontier(n);}).map(function(n){return n.label;});
+  $('grafoHint').innerHTML='Cada bloque desbloquea al siguiente. <b style="color:#3f7a5f">Verde</b>=ya conectado · <b style="color:#8b8782">gris punteado</b>=por conectar · <b style="color:#a8503f">rojo</b>=frenado por BBVA. Toca un bloque para ver sus trámites.'+(ah.length?' <br><b>Puedes atacar AHORA:</b> '+esc(ah.join(' · ')):'');
+}
+function verNodo(id){
+  var n=null; GRAFO.forEach(function(x){if(x.id===id)n=x;}); if(!n)return;
+  var tr=tabla('TRAMITES'), byId={}; tr.forEach(function(t){byId[t.tramite_id]=t;});
+  var vids={}; tabla('VIDEOS').forEach(function(v){if(v.tramite_id)vids[v.tramite_id]=v.url;});
+  var body='<span class="x" onclick="cerrar()">×</span><h3>'+esc(n.label)+'</h3>';
+  if(n.goal){ body+='<div class="hint">El destino: vender los lotes. Se abre solo cuando TODAS las puertas legales estén en verde — hoy faltan, incluida la liberación de la hipoteca BBVA.</div>'; $('modalBox').innerHTML=body; $('ov').className='ov on'; return; }
+  body+='<div class="nota" style="margin-bottom:8px;">Trámites de este bloque:</div>';
+  var hubo=false;
+  (n.maps||[]).forEach(function(tid){ var t=byId[tid]; if(!t)return; hubo=true; var c=clase(t.estado); var v=vids[tid]?(' · <a class="vlink" href="'+esc(vids[tid])+'" target="_blank">▶ video</a>'):'';
+    body+='<div style="border-left:4px solid '+GCOL[c]+';padding:3px 10px;margin-bottom:6px;"><b style="font-size:13px;">'+esc(t.nombre)+'</b><br><span class="nota">'+esc(t.estado)+(t.responsable_nombre?' · '+esc(t.responsable_nombre):'')+(t.oficio_folio?' · '+esc(t.oficio_folio):'')+v+'</span></div>'; });
+  if(!hubo) body+='<div class="nota">Sin trámites capturados aún.</div>';
+  if(n.deps&&n.deps.length){ var dl=n.deps.map(function(d){var nn=null;GRAFO.forEach(function(x){if(x.id===d)nn=x;});return nn?nn.label:d;}); body+='<div class="hint">Depende de: '+esc(dl.join(' · '))+'</div>'; }
+  $('modalBox').innerHTML=body; $('ov').className='ov on';
+}
 
 /* ============ boot ============ */
 if(desbloqueado())iniciar();
