@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Evidencia · Real de Miramar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/estilo.css">
+</head>
+<body>
+<div id="nav"></div>
+<main id="app">
+  <h2 class="sec" id="bitacora">Bitácora del proyecto</h2>
+  <div id="secBita"></div>
+
+  <h2 class="sec" id="videos">Galería de videos</h2>
+  <div id="secCanal"></div>
+  <div id="secVideos"></div>
+
+  <div id="secDocs"></div>
+
+  <div id="secCruce"></div>
+</main>
+<footer>Real de Miramar · tablero del proyecto — datos administrados desde el Google Sheet Maestro.<div id="stamp" style="margin-top:4px;"></div></footer>
+<script src="assets/board.js"></script>
+<script>
+window.renderPage=function(B){
+  var lite=B.lite();
+
+  /* ---------- stamp ---------- */
+  B.$("stamp").textContent="Actualizado: "+(B.meta().actualizado?new Date(B.meta().actualizado).toLocaleString("es-MX"):"—");
+
+  /* ---------- 1. BITÁCORA ---------- */
+  (function(){
+    var rows=B.tabla("BITACORA").slice().sort(function(a,b){
+      var fa=String(a.fecha||""), fb=String(b.fecha||"");
+      return fa<fb?1:(fa>fb?-1:0);
+    });
+    if(!rows.length){B.$("secBita").innerHTML='<div class="nota">Sin entradas de bitácora por ahora.</div>';return;}
+    var h='<div class="feed">';
+    rows.forEach(function(r){
+      var tp=String(r.tipo||"").toLowerCase();
+      var tcls=/avance/.test(tp)?"avance":(/obst/.test(tp)?"obstaculo":(/hito/.test(tp)?"hito":""));
+      var links="";
+      if(String(r.video_url||"").trim()){
+        links+=' <a class="vlink" href="'+B.esc(String(r.video_url).trim())+'" target="_blank" rel="noopener">&#9654; ver</a>';
+      }
+      if(!lite&&String(r.tramite_id||"").trim()){
+        links+=' <a href="tramites.html#'+encodeURIComponent(String(r.tramite_id).trim())+'" style="font-size:11.5px;">ficha &rarr;</a>';
+      }
+      h+='<div class="bita">'+
+        '<div class="fch">'+B.esc(B.fmtFecha(r.fecha))+'</div>'+
+        '<div><h4>'+B.esc(r.titulo)+'</h4>'+
+        '<div class="d">'+B.esc(r.descripcion)+links+'</div>'+
+        (r.tipo?('<span class="tg '+tcls+'">'+B.esc(r.tipo)+'</span>'):'')+
+        '</div></div>';
+    });
+    h+='</div>';
+    B.$("secBita").innerHTML=h;
+  })();
+
+  /* ---------- 2. GALERÍA ---------- */
+  (function(){
+    var cy=String(B.config("canal_youtube")||"");
+    var mUrl=cy.match(/https\S+/);
+    B.$("secCanal").innerHTML=mUrl?('<div class="nota" style="margin-bottom:10px;">Canal del proyecto: <a href="'+B.esc(mUrl[0])+'" target="_blank" rel="noopener">'+B.esc(mUrl[0])+'</a></div>'):"";
+
+    var mapa=B.videosPor();
+    var ids=Object.keys(mapa);
+    if(!ids.length){B.$("secVideos").innerHTML='<div class="nota">Aún no hay videos publicados.</div>';return;}
+    ids.sort(function(a,b){
+      if(a==="_gen")return 1;
+      if(b==="_gen")return -1;
+      return mapa[b].length-mapa[a].length;
+    });
+    var h="";
+    ids.forEach(function(id){
+      var vids=mapa[id];
+      var nombre;
+      if(id==="_gen"){nombre="Generales";}
+      else{
+        var t=B.tramitePor(id);
+        nombre=t?String(t.nombre||id):id;
+      }
+      var cab;
+      if(id!=="_gen"&&!lite){
+        cab='<a href="tramites.html#'+encodeURIComponent(id)+'" style="color:inherit;">'+B.esc(nombre)+'</a>';
+      } else {
+        cab=B.esc(nombre);
+      }
+      h+='<div class="card" style="margin-bottom:10px;">'+
+        '<div style="font-size:13px;font-weight:600;">'+cab+' <span class="nota">· '+vids.length+(vids.length===1?" video":" videos")+'</span></div>'+
+        '<div class="vidrow">';
+      vids.forEach(function(v){
+        h+='<a class="vid" href="'+B.esc(String(v.url||""))+'" target="_blank" rel="noopener" title="'+B.esc(v.titulo)+'">&#9654;</a>';
+      });
+      h+='</div></div>';
+    });
+    B.$("secVideos").innerHTML=h;
+  })();
+
+  /* ---------- 3. EXPEDIENTE ---------- */
+  (function(){
+    var el=B.$("secDocs");
+    if(lite){
+      el.innerHTML='<h2 class="sec" id="docs">Expediente</h2><div class="hint">El expediente completo es visible con clave de acceso.</div>';
+      return;
+    }
+    var docs=B.docsVigentes();
+    var h='<h2 class="sec" id="docs">Expediente · documentos vigentes</h2>';
+    if(!docs.length){
+      el.innerHTML=h+'<div class="nota">Sin documentos vigentes registrados.</div>';
+      return;
+    }
+    h+='<div class="card">';
+    docs.forEach(function(d){
+      var did=String(d.doc_id||"").trim();
+      var tit=did?('<a href="https://drive.google.com/file/d/'+encodeURIComponent(did)+'/view" target="_blank" rel="noopener">'+B.esc(d.titulo)+'</a>'):B.esc(d.titulo);
+      var notas=String(d.notas||"");
+      if(notas.length>90)notas=notas.slice(0,90)+"…";
+      h+='<div class="docrow">'+
+        '<div>'+tit+(notas?(' <span class="nota">'+B.esc(notas)+'</span>'):'')+'</div>'+
+        '<div><span class="chip cat" style="cursor:default;">'+B.esc(d.categoria)+'</span>'+
+        (d.fecha_mod?(' <span class="nota">'+B.esc(B.fmtFecha(d.fecha_mod))+'</span>'):'')+'</div>'+
+        '</div>';
+    });
+    h+='</div>';
+    el.innerHTML=h;
+  })();
+
+  /* ---------- 4. CRUCE folio ↔ papel ↔ video ---------- */
+  (function(){
+    var el=B.$("secCruce");
+    if(lite){el.innerHTML="";return;}
+    var docs=B.docsVigentes();
+    var mapa=B.videosPor();
+    var filas="";
+    B.tabla("TRAMITES").forEach(function(t){
+      var folio=String(t.oficio_folio||"").trim();
+      if(!folio)return;
+      var tid=String(t.tramite_id||"").trim();
+      var vids=mapa[tid]||[];
+      /* match de doc: inclusión de los dígitos del folio en titulo+notas del doc */
+      var dig=folio.replace(/\D/g,"");
+      var docMatch=null;
+      if(dig.length>=3){
+        for(var i=0;i<docs.length;i++){
+          var texto=String(docs[i].titulo||"")+" "+String(docs[i].notas||"");
+          if(texto.indexOf(dig)>=0){docMatch=docs[i];break;}
+        }
+      }
+      if(!docMatch&&!vids.length)return;
+      var celdas='<div><span style="font-family:Kefa-Regular,Georgia,serif;">'+B.esc(folio)+'</span> · '+
+        '<a href="tramites.html#'+encodeURIComponent(tid)+'">'+B.esc(t.nombre)+'</a></div>';
+      var der="";
+      if(vids.length)der+='<span class="chip" style="cursor:default;">'+vids.length+(vids.length===1?" video":" videos")+'</span> ';
+      if(docMatch){
+        var did=String(docMatch.doc_id||"").trim();
+        if(did)der+='<span class="nota">doc: <a href="https://drive.google.com/file/d/'+encodeURIComponent(did)+'/view" target="_blank" rel="noopener">'+B.esc(docMatch.titulo)+'</a></span>';
+        else der+='<span class="nota">doc: '+B.esc(docMatch.titulo)+'</span>';
+      }
+      filas+='<div class="docrow">'+celdas+'<div>'+der+'</div></div>';
+    });
+    var h='<h2 class="sec" id="cruce">Cruce folio &harr; papel &harr; video</h2>';
+    if(!filas){el.innerHTML=h+'<div class="nota">Sin folios con evidencia cruzada por ahora.</div>';return;}
+    el.innerHTML=h+'<div class="card">'+filas+'</div>';
+  })();
+};
+Board.init({page:"evidencia",sub:"evidencia y expediente"});
+</script>
+</body>
+</html>
