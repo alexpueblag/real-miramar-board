@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Trámites · Real de Miramar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/estilo.css">
+</head>
+<body>
+<div id="nav"></div>
+<main id="app">
+  <section>
+    <h2 class="sec" id="legal">Puerta legal</h2>
+    <div id="secLegal"></div>
+  </section>
+  <section>
+    <h2 class="sec">Atacables ahora</h2>
+    <div id="secAtac"></div>
+  </section>
+  <section>
+    <h2 class="sec">Semáforo de trámites</h2>
+    <div id="secFiltros" class="filtros"></div>
+    <div id="secGrid"></div>
+  </section>
+  <section>
+    <h2 class="sec">Mapa de dependencias</h2>
+    <div id="secMapa"></div>
+  </section>
+</main>
+<footer>Real de Miramar · tablero del proyecto — datos administrados desde el Google Sheet Maestro.<div id="stamp" style="margin-top:4px;"></div></footer>
+<script src="assets/board.js"></script>
+<script>
+/* ============================================================
+   tramites.html — dueña del estado de trámites y puerta legal.
+   CERO datos hardcodeados: todo sale de Board (Sheet Maestro).
+   ============================================================ */
+var BREF=null;      /* referencia a Board para handlers globales */
+var FILTRO="todos"; /* estado del filtro del semáforo */
+var WIRED=false;    /* evita listeners duplicados en re-render */
+
+/* ---------- utilidades locales ---------- */
+function idSafe(id){return String(id==null?"":id).replace(/[^\w\.\-]/g,"");}
+function dotVar(cl){return cl==="gris"?"piedra":cl;} /* var(--gris) no existe */
+function esSi(v){return /^si/i.test(String(v||"").trim());}
+
+/* ---------- acordeón de puertas ---------- */
+window.togglePta=function(cab){
+  var p=cab.parentNode;
+  if((" "+p.className+" ").indexOf(" open ")>=0)p.className=p.className.replace(/\s*\bopen\b/,"");
+  else p.className+=" open";
+};
+
+/* ---------- 1. PUERTA LEGAL ---------- */
+function pintarLegal(B){
+  var cont=B.$("secLegal");if(!cont)return;
+  var ps=B.puertasCalc();
+  if(!ps.length){cont.innerHTML='<div class="nota">Sin datos de cumplimiento por ahora.</div>';return;}
+  var rank={rojo:1,amar:2,verde:3,gris:2};
+  var abrir=-1,peor=99;
+  ps.forEach(function(p,i){
+    if(/bbva|hipoteca/i.test(String(p.puerta))&&(rank[p.estado]||2)<peor){peor=rank[p.estado]||2;abrir=i;}
+  });
+  var html=ps.map(function(p,i){
+    var bb=/bbva|hipoteca/i.test(String(p.puerta));
+    var cls="pta "+B.clase(p.estado)+(bb?" bbva":"")+(i===abrir?" open":"");
+    var subs=(p.subs||[]).map(function(s){
+      var sc=dotVar(B.clase(s.semaforo));
+      return '<div><span style="color:var(--'+sc+');">●</span> '+B.esc(s.sub_estado||"—")+
+        ' — '+B.esc(s.descripcion||"")+
+        ' <span class="nota">('+B.esc(s.responsable_nombre||"—")+
+        (s.fecha_compromiso?", "+B.esc(B.fmtFecha(s.fecha_compromiso)):"")+')</span></div>';
+    }).join("");
+    return '<div class="'+cls+'">'+
+      '<div class="cab" onclick="togglePta(this)"><span class="p"></span>'+
+      '<span>'+B.esc(p.puerta)+'</span>'+
+      (bb?'<span style="color:var(--rojo);font-size:9.5px;letter-spacing:1px;text-transform:uppercase;">frena la venta</span>':"")+
+      '<span class="chev">▾</span></div>'+
+      '<div class="cuerpo">'+(subs||'<div class="nota">Sin sub-pasos registrados.</div>')+'</div></div>';
+  }).join("");
+  cont.innerHTML='<div class="puertas">'+html+'</div>';
+}
+
+/* ---------- 2. ATACABLES AHORA ---------- */
+function pintarAtacables(B){
+  var cont=B.$("secAtac");if(!cont)return;
+  var fr=B.frontera(6);
+  if(!fr.length){cont.innerHTML='<div class="nota">No hay trámites listos para atacar en este momento.</div>';return;}
+  cont.innerHTML='<div class="tgrid">'+fr.map(function(t){
+    return '<div class="tcard" style="border-left-color:var(--negro);" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')">'+
+      '<h4>'+B.esc(t.nombre)+'</h4>'+
+      '<div class="meta">'+B.esc(t.responsable_nombre||"—")+'</div>'+
+      '<div class="meta">'+B.esc(B.fmtEta(B.etaDe(t)))+'</div></div>';
+  }).join("")+'</div>';
+}
+
+/* ---------- 3. SEMÁFORO: filtros + grid ---------- */
+window.setFiltro=function(f){
+  FILTRO=String(f||"todos");
+  if(BREF){pintarFiltros(BREF);pintarGrid(BREF);}
+};
+function pintarFiltros(B){
+  var cont=B.$("secFiltros");if(!cont)return;
+  var c=B.conteos();
+  var ts=B.tabla("TRAMITES");
+  var nGates=0,nUrg=0;
+  ts.forEach(function(t){if(esSi(t.gate))nGates++;if(esSi(t.urgente))nUrg++;});
+  var chips=[
+    ["todos","Todos",c.total],
+    ["verde","Hechos",c.verde],
+    ["amar","En proceso",c.amar],
+    ["rojo","Faltan",c.rojo],
+    ["gate","🔑 gates",nGates],
+    ["urgente","Urgentes",nUrg]
+  ];
+  B.hitosOrd().forEach(function(h){
+    var g=B.gatesDe(h.hito_id);
+    if(g.length>0)chips.push(["etapa:"+idSafe(h.hito_id),String(h.nombre||h.hito_id),g.length]);
+  });
+  cont.innerHTML=chips.map(function(ch){
+    return '<span class="chip'+(FILTRO===ch[0]?" on":"")+'" onclick="setFiltro(\''+ch[0].replace(/'/g,"")+'\')">'+
+      B.esc(ch[1])+' · '+ch[2]+'</span>';
+  }).join("");
+}
+function pasaFiltro(B,t){
+  var f=FILTRO;
+  if(f==="todos")return true;
+  if(f==="verde"||f==="amar"||f==="rojo")return B.clase(t.estado)===f;
+  if(f==="gate")return esSi(t.gate);
+  if(f==="urgente")return esSi(t.urgente);
+  if(f.indexOf("etapa:")===0)return idSafe(t.paquete_etapa)===f.slice(6);
+  return true;
+}
+function pintarGrid(B){
+  var cont=B.$("secGrid");if(!cont)return;
+  var ts=B.tabla("TRAMITES");
+  if(!ts.length){cont.innerHTML='<div class="nota">Sin trámites cargados en el Sheet.</div>';return;}
+  var vis=ts.filter(function(t){return pasaFiltro(B,t);});
+  if(!vis.length){cont.innerHTML='<div class="nota">Ningún trámite coincide con este filtro.</div>';return;}
+  cont.innerHTML='<div class="tgrid">'+vis.map(function(t){
+    var cl=B.clase(t.estado);
+    var ola=String(t.ola||"").trim();
+    var badges='';
+    if(String(t.paquete_etapa||"").trim())badges+='<span class="olab">'+B.esc(t.paquete_etapa)+'</span>';
+    if(ola&&!/^(HECHO|COND)$/i.test(ola))badges+='<span class="olab">ola '+B.esc(ola)+'</span>';
+    if(esSi(t.gate))badges+='<span class="olab">🔑 gate</span>';
+    if(esSi(t.urgente)&&cl!=="verde")badges+='<span class="olab warn">urgente</span>';
+    return '<div class="tcard '+cl+'" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')">'+
+      '<span class="st"><span class="p"></span>'+B.esc(t.estado||"—")+'</span>'+
+      '<h4>'+B.esc(t.nombre)+'</h4>'+
+      (badges?'<div style="margin:2px 0 5px;">'+badges+'</div>':"")+
+      '<div class="meta">'+B.esc(t.autoridad||"—")+' · '+B.esc(t.responsable_nombre||"—")+'</div></div>';
+  }).join("")+'</div>';
+}
+
+/* ---------- 4. FICHA CANÓNICA ---------- */
+window.abrirFicha=function(id){
+  var B=BREF;if(!B)return;
+  var t=B.tramitePor(id);
+  if(!t){B.toast("Trámite no encontrado",true);return;}
+  var cl=B.clase(t.estado);
+  var h='<h3>'+B.esc(t.nombre)+'</h3>';
+  h+='<div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:6px;">'+
+    '<span style="width:9px;height:9px;border-radius:50%;background:var(--'+dotVar(cl)+');display:inline-block;"></span>'+
+    B.esc(t.estado||"—")+'</div>';
+  var ola=String(t.ola||"").trim();
+  var badges='';
+  if(String(t.paquete_etapa||"").trim())badges+='<span class="olab">'+B.esc(t.paquete_etapa)+'</span>';
+  if(ola&&!/^(HECHO|COND)$/i.test(ola))badges+='<span class="olab">ola '+B.esc(ola)+'</span>';
+  else if(/^COND$/i.test(ola))badges+='<span class="olab">condicional</span>';
+  if(esSi(t.gate))badges+='<span class="olab">🔑 gate</span>';
+  if(esSi(t.urgente))badges+='<span class="olab warn">urgente</span>';
+  if(badges)h+='<div style="margin-top:6px;">'+badges+'</div>';
+  h+='<div class="nota" style="margin-top:8px;">Autoridad: '+B.esc(t.autoridad||"—")+
+     ' · Responsable: '+B.esc(t.responsable_nombre||"—")+'</div>';
+  /* fechas */
+  var fechas=[];
+  if(String(t.fecha_inicio_est||"").trim())fechas.push("Inicio est.: "+B.esc(B.fmtFecha(t.fecha_inicio_est)));
+  if(B.clase(t.estado)!=="verde")fechas.push("ETA: "+B.esc(B.fmtEta(B.etaDe(t))));
+  if(String(t.fecha_real_fin||"").trim())fechas.push("Terminado: "+B.esc(B.fmtFecha(t.fecha_real_fin)));
+  h+='<div class="nota" style="margin-top:4px;">'+fechas.join(" · ")+'</div>';
+  /* por qué importa — completo, sin truncar */
+  if(String(t.por_que_importa||"").trim())
+    h+='<div class="hint" style="margin-top:12px;">'+B.esc(t.por_que_importa)+'</div>';
+  /* oficio / folio → doc vigente en Drive si alguno lo referencia */
+  var folio=String(t.oficio_folio||"").trim();
+  if(folio){
+    var doc=null;
+    B.docsVigentes().forEach(function(d){
+      if(doc)return;
+      var pajar=String(d.titulo||"")+" "+String(d.notas||"");
+      if(pajar.indexOf(folio)>=0&&String(d.doc_id||"").trim())doc=d;
+    });
+    if(doc)h+='<div style="margin-top:10px;font-size:12.5px;">Oficio/folio: '+
+      '<a href="https://drive.google.com/file/d/'+encodeURIComponent(String(doc.doc_id).trim())+'/view" target="_blank" rel="noopener">'+
+      B.esc(folio)+' — '+B.esc(doc.titulo)+'</a></div>';
+    else h+='<div style="margin-top:10px;font-size:12.5px;">Oficio/folio: '+B.esc(folio)+'</div>';
+  }
+  /* costo (solo con clave de vista — nunca en modo público) */
+  if(!B.lite()&&String(t.costo_estimado||"").trim())
+    h+='<div class="nota" style="margin-top:6px;">Costo estimado: '+B.esc(B.money(t.costo_estimado))+'</div>';
+  /* videos del trámite */
+  var vids=B.videosPor()[String(t.tramite_id||"").trim()]||[];
+  if(vids.length){
+    h+='<div class="nota" style="margin-top:12px;">Videos</div><div class="vidrow">';
+    vids.forEach(function(v){
+      if(!/^http/i.test(String(v.url||"")))return;
+      h+='<a class="vid" href="'+B.esc(v.url)+'" target="_blank" rel="noopener" title="'+B.esc(v.titulo||"video")+'">▶</a>';
+    });
+    h+='</div>';
+  }
+  /* dependencias → fichas internas */
+  var deps=String(t.depende_de||"").split(",").map(function(s){return s.trim();}).filter(Boolean);
+  if(deps.length){
+    h+='<div class="nota" style="margin-top:12px;">Depende de</div><div style="font-size:12.5px;line-height:1.9;">';
+    deps.forEach(function(d){
+      var p=B.tramitePor(d);
+      h+='<div><a href="#" onclick="abrirFicha(\''+idSafe(d)+'\');return false;">'+
+        B.esc(p?p.nombre:d)+'</a>'+
+        (p?' <span style="color:var(--'+dotVar(B.clase(p.estado))+');">●</span>':"")+'</div>';
+    });
+    h+='</div>';
+  }
+  if(String(t.decision||"").trim())
+    h+='<div class="nota" style="margin-top:10px;">Decisión: '+B.esc(t.decision)+'</div>';
+  if(String(t.notas||"").trim())
+    h+='<div class="nota" style="margin-top:6px;">'+B.esc(t.notas)+'</div>';
+  B.modal(h);
+};
+
+/* ---------- 5. DEEP-LINK ---------- */
+function manejarHash(){
+  var h=String(location.hash||"");
+  if(!h)return;
+  if(h==="#legal"){var el=document.getElementById("legal");if(el)el.scrollIntoView();return;}
+  if(/^#T/i.test(h))window.abrirFicha(decodeURIComponent(h.slice(1)));
+}
+
+/* ---------- 6. MINI-MAPA DE DEPENDENCIAS ---------- */
+function pintarMapa(B){
+  var cont=B.$("secMapa");if(!cont)return;
+  var ea=B.etapaActual(),cur=ea.cur;
+  if(!cur){cont.innerHTML='<div class="nota">Todas las etapas están completas; no hay gates pendientes que mapear.</div>';return;}
+  var gates=B.gatesDe(cur.hito_id);
+  if(!gates.length){cont.innerHTML='<div class="nota">La etapa actual no tiene trámites gate registrados en el Sheet.</div>';return;}
+  /* nodos = gates de la etapa actual + sus dependencias directas */
+  var set={},orden=[];
+  function add(t){var id=String(t.tramite_id||"").trim();if(id&&!set[id]){set[id]=t;orden.push(id);}}
+  gates.forEach(add);
+  gates.forEach(function(t){
+    String(t.depende_de||"").split(",").forEach(function(d){
+      d=d.trim();if(!d)return;var p=B.tramitePor(d);if(p)add(p);
+    });
+  });
+  /* límite de densidad: 14 nodos priorizando ruta crítica */
+  if(orden.length>14){
+    orden.sort(function(a,b){
+      var ra=(String(set[a].ruta_critica||"")==="no")?1:0;
+      var rb=(String(set[b].ruta_critica||"")==="no")?1:0;
+      return ra-rb;
+    });
+    orden=orden.slice(0,14);
+    var keep={};orden.forEach(function(id){keep[id]=set[id];});set=keep;
+  }
+  /* profundidad: 0 = sin dependencias no-verdes dentro del set */
+  var depth={};
+  function depthOf(id,guard){
+    if(depth[id]!=null)return depth[id];
+    if(guard[id])return 0;
+    guard[id]=true;
+    var mx=-1;
+    String(set[id].depende_de||"").split(",").forEach(function(d){
+      d=d.trim();
+      if(!d||!set[d])return;
+      if(B.clase(set[d].estado)==="verde")return;
+      var v=depthOf(d,guard);if(v>mx)mx=v;
+    });
+    depth[id]=mx+1;
+    return depth[id];
+  }
+  orden.forEach(function(id){depthOf(id,{});});
+  /* layout por columnas */
+  var NW=190,NH=38,CW=230,RH=54,PADX=10,PADY=26;
+  var cols={},maxD=0;
+  orden.forEach(function(id){var d=depth[id]||0;if(d>maxD)maxD=d;(cols[d]=cols[d]||[]).push(id);});
+  var maxRows=0,pos={};
+  for(var d=0;d<=maxD;d++){
+    var col=cols[d]||[];
+    if(col.length>maxRows)maxRows=col.length;
+    col.forEach(function(id,i){pos[id]={x:PADX+d*CW,y:PADY+i*RH};});
+  }
+  var W=PADX*2+maxD*CW+NW,H=PADY*2+Math.max(1,maxRows)*RH;
+  var colores={verde:"#3f7a5f",amar:"#b07d3a",rojo:"#a8503f",gris:"#8b8782"};
+  var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="mapaT" style="width:100%;height:auto;max-width:'+W+'px;">';
+  s+='<title id="mapaT">Mapa de dependencias de los gates de la etapa: '+B.esc(cur.nombre||cur.hito_id)+'</title>';
+  s+='<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8b8782"/></marker></defs>';
+  /* flechas primero (debajo de las cajas) */
+  orden.forEach(function(id){
+    String(set[id].depende_de||"").split(",").forEach(function(dep){
+      dep=dep.trim();
+      if(!dep||!pos[dep]||!pos[id])return;
+      var a=pos[dep],b=pos[id];
+      s+='<line x1="'+(a.x+NW)+'" y1="'+(a.y+NH/2)+'" x2="'+b.x+'" y2="'+(b.y+NH/2)+
+         '" stroke="#8b8782" stroke-width="1.4" marker-end="url(#arr)"/>';
+    });
+  });
+  /* nodos */
+  orden.forEach(function(id){
+    var t=set[id],p=pos[id];if(!p)return;
+    var c=colores[B.clase(t.estado)]||colores.gris;
+    var nom=String(t.nombre||id);
+    if(nom.length>26)nom=nom.substring(0,25)+"…";
+    s+='<g onclick="abrirFicha(\''+idSafe(id)+'\')" style="cursor:pointer;">'+
+      '<title>'+B.esc(t.nombre||id)+'</title>'+
+      '<rect x="'+p.x+'" y="'+p.y+'" width="'+NW+'" height="'+NH+'" rx="8" fill="'+c+'"/>'+
+      '<text x="'+(p.x+NW/2)+'" y="'+(p.y+NH/2+3.5)+'" text-anchor="middle" fill="#ffffff" font-family="Poppins,Arial,sans-serif" font-size="10.5">'+B.esc(nom)+'</text></g>';
+  });
+  s+='</svg>';
+  cont.innerHTML='<div class="card" style="overflow-x:auto;">'+s+
+    '<div class="nota" style="margin-top:6px;">Gates de la etapa actual y sus dependencias directas · toca una caja para abrir la ficha.</div></div>';
+}
+
+/* ---------- render principal (puede llamarse varias veces) ---------- */
+window.renderPage=function(B){
+  BREF=B;
+  pintarLegal(B);
+  pintarAtacables(B);
+  pintarFiltros(B);
+  pintarGrid(B);
+  pintarMapa(B);
+  B.$("stamp").textContent="Actualizado: "+(B.meta().actualizado?new Date(B.meta().actualizado).toLocaleString("es-MX"):"—");
+  if(!WIRED){
+    WIRED=true;
+    window.addEventListener("hashchange",manejarHash);
+    manejarHash(); /* deep-link inicial: #T… abre ficha, #legal hace scroll */
+  }
+};
+Board.init({page:"tramites",acceso:"clave",sub:"tramites y puerta legal"});
+</script>
+</body>
+</html>
