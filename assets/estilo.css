@@ -4,15 +4,16 @@
    Compartida por las 5 páginas; los datos SIEMPRE vienen del
    Sheet — aquí solo vive presentación.
    ============================================================ */
-@font-face{font-family:'Kefa-Regular';src:local('Kefa'),url('../fonts/Kefa-Regular.ttf') format('truetype');font-display:swap;}
-:root{--negro:#1a1818;--crema:#f5f4f2;--arena:#efede9;--piedra:#8b8782;--carbon:#4a4744;--linea:#e6e3dd;
-  --verde:#3f7a5f;--amar:#b07d3a;--rojo:#a8503f;--rojoclaro:#b9736a;--azul:#4a6d8c;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+/* Identidad YoDesarrollo · registro premium (marino + crema + dorado). */
+:root{--negro:#0F1F3D;--crema:#FBF8F1;--arena:#f1ece0;--piedra:#a49a86;--carbon:#413c37;--linea:#ece4d4;
+  --verde:#059669;--amar:#B45309;--rojo:#B91C1C;--rojoclaro:#cf8b7e;--azul:#2a4a6e;--oro:#B8954B;--oroc:#C9A86A;}
 *{box-sizing:border-box;}
-body{margin:0;background:var(--crema);color:var(--negro);font-family:'Poppins','Raleway','Helvetica Neue',Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
-.serif{font-family:Kefa-Regular,Georgia,serif;}
+body{margin:0;background:var(--crema);color:var(--negro);font-family:'Inter','Poppins','Helvetica Neue',Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+.serif{font-family:'Cormorant Garamond',Georgia,serif;}
 a{color:var(--azul);}
 main{max-width:1040px;margin:0 auto;padding:16px 18px 60px;}
-h2.sec{font-family:Kefa-Regular,Georgia,serif;font-weight:normal;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--piedra);margin:28px 0 12px;}
+h2.sec{font-family:'Cormorant Garamond',Georgia,serif;font-weight:normal;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--piedra);margin:28px 0 12px;}
 .card{background:#fff;border:1px solid var(--linea);border-radius:10px;padding:16px 18px;}
 .muted,.nota{color:var(--piedra);}
 .nota{font-size:12px;}
@@ -47,7 +48,7 @@ header{background:#fff;border-bottom:1px solid var(--linea);padding:10px 18px;di
 .step{flex:1 0 92px;min-width:92px;border-radius:8px 8px 0 0;padding:10px 8px 11px;color:#fff;position:relative;text-align:center;}
 .step .n{font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.85;}
 .step .nm{font-size:12px;line-height:1.2;margin-top:2px;}
-.step .pr{font-family:Kefa-Regular,Georgia,serif;font-size:15px;margin-top:5px;}
+.step .pr{font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;margin-top:5px;}
 .step.verde{background:var(--verde);} .step.amar{background:var(--amar);} .step.rojo{background:var(--rojoclaro);} .step.gris{background:var(--piedra);}
 .step.here{box-shadow:0 0 0 3px var(--negro);z-index:2;}
 .step .here-tag{position:absolute;top:-19px;left:50%;transform:translateX(-50%);background:var(--negro);color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;white-space:nowrap;}
@@ -107,7 +108,7 @@ header{background:#fff;border-bottom:1px solid var(--linea);padding:10px 18px;di
 /* ---------- listas / feed / tablas ---------- */
 .feed{display:flex;flex-direction:column;gap:8px;}
 .bita{background:#fff;border:1px solid var(--linea);border-radius:9px;padding:11px 14px;display:flex;gap:12px;}
-.bita .fch{font-size:11px;color:var(--piedra);white-space:nowrap;min-width:74px;font-family:Kefa-Regular,Georgia,serif;}
+.bita .fch{font-size:11px;color:var(--piedra);white-space:nowrap;min-width:74px;font-family:'Cormorant Garamond',Georgia,serif;}
 .bita h4{margin:0 0 2px;font-size:13px;font-weight:600;}
 .bita .d{font-size:12px;color:var(--carbon);}
 .bita .tg{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#fff;background:var(--piedra);border-radius:10px;padding:1px 7px;display:inline-block;margin-top:4px;}
@@ -118,7 +119,7 @@ header{background:#fff;border-bottom:1px solid var(--linea);padding:10px 18px;di
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;}
 .kpi{background:#fff;border:1px solid var(--linea);border-radius:9px;padding:12px 14px;}
 .kpi .k{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--piedra);}
-.kpi .v{font-family:Kefa-Regular,Georgia,serif;font-size:24px;line-height:1.1;margin-top:3px;}
+.kpi .v{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;line-height:1.1;margin-top:3px;}
 .hbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11.5px;}
 .hbar .nom{min-width:130px;}
 .hbar .pista{flex:1;height:13px;background:var(--arena);border-radius:4px;overflow:hidden;}
@@ -142,7 +143,7 @@ header{background:#fff;border-bottom:1px solid var(--linea);padding:10px 18px;di
 .ov{position:fixed;inset:0;background:rgba(26,24,24,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:80;overflow:auto;}
 .ov.on{display:flex;}
 .modal{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.modal h3{margin:0 0 4px;font-family:Kefa-Regular,Georgia,serif;font-weight:normal;font-size:20px;}
+.modal h3{margin:0 0 4px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:normal;font-size:20px;}
 .modal .x{float:right;cursor:pointer;color:var(--piedra);font-size:20px;line-height:1;}
 .modal input,.modal textarea{width:100%;margin-top:8px;border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:13px;}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--negro);color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;opacity:0;transition:opacity .25s;z-index:300;pointer-events:none;}
