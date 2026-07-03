@@ -53,10 +53,13 @@ function cargar(cb){
     });
     return;
   }
+  /* Si hay clave financiera guardada, traemos también el dinero (para
+     el hero de Inicio); si no, la vista pública normal. */
+  var fk=finGuardada();
   var c=leerCache();
-  if(c&&(Date.now()-c.t)<TTL){DATA=c.j;setBadge("live","En vivo");cb();return;}
-  fetchBoard(null,function(err,j){
-    if(!err){DATA=j;setBadge("live","En vivo");cb();}
+  if(!fk&&c&&(Date.now()-c.t)<TTL){DATA=c.j;setBadge("live","En vivo");cb();return;}
+  fetchBoard(fk||null,function(err,j){
+    if(!err){if(fk&&j.meta&&j.meta.incluye_financiero)FIN=fk;DATA=j;setBadge("live",FIN?"En vivo · interno":"En vivo");cb();}
     else if(c){DATA=c.j;setBadge("cache","Copia guardada");cb();}
     else{setBadge("error","Sin datos");var a=$("app");if(a)a.insertAdjacentHTML("afterbegin",'<div class="gatebanner">No se pudo cargar el tablero. Revisa la conexión.</div>');}
   });
