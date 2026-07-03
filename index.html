@@ -7,7 +7,7 @@
 <title>Inicio · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=3">
+<link rel="stylesheet" href="assets/estilo.css?v=4">
 </head>
 <body>
 <div id="nav"></div>
@@ -155,10 +155,44 @@ window.renderPage=function(B){
     g+=fld("Autoridad",t.autoridad)+fld("Responsable",t.responsable_nombre)+fld("Oficio / folio",t.oficio_folio)+fld("Por qué importa",t.por_que_importa)+fld("Decisión",t.decision);
     if(deps.length)g+='<div class="idfl"><div class="k">Depende de</div><div class="idch">'+deps.map(function(d){var p=B.tramitePor(d);return '<span class="idcp" onclick="abrirDrw(\''+d+'\')">'+d+(p?(' · '+B.esc(p.nombre)):"")+'</span>';}).join("")+'</div></div>';
     if(desb.length)g+='<div class="idfl"><div class="k">Desbloquea</div><div class="idch">'+desb.map(function(d){var p=B.tramitePor(d);return '<span class="idcp" onclick="abrirDrw(\''+d+'\')">'+d+(p?(' · '+B.esc(p.nombre)):"")+'</span>';}).join("")+'</div></div>';
-    g+='<div class="idfl"><a class="btn" href="tramites.html#'+encodeURIComponent(id)+'" style="text-decoration:none;display:inline-block;">Ver en Trámites →</a></div>';
+    var lk=String(t.link||"").trim();
+    if(/^https?:\/\//i.test(lk))g+='<div class="idfl"><div class="k">Documentos del trámite</div><a class="btn ghost" href="'+B.esc(lk)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-top:4px;">📂 Abrir todo en Drive →</a></div>';
+    g+='<div class="idsave"><a class="btn ghost" href="tramites.html#'+encodeURIComponent(id)+'">Ver en Trámites</a><button class="btn" onclick="editarFicha(\''+id+'\')">✎ Editar</button></div>';
     B.$("idrw").innerHTML=g; B.$("idrw").className="on"; B.$("idrwov").className="on";
   };
   window.cerrarDrw=function(){B.$("idrw").className="";B.$("idrwov").className="";};
+  function editKey(){try{return sessionStorage.getItem("rm_edit_v1")||"";}catch(e){return"";}}
+  window.editarFicha=function(id){
+    if(!editKey()){var k=prompt("Clave de edición (para guardar en el Sheet)");if(!k)return;try{sessionStorage.setItem("rm_edit_v1",k.trim());}catch(e){}}
+    var t=B.tramitePor(id);if(!t)return;
+    var inp=function(lbl,name,val,ph){return '<div class="idfl"><div class="k">'+lbl+'</div><input id="ed_'+name+'" value="'+B.esc(val==null?"":val)+'" placeholder="'+B.esc(ph||"")+'"></div>';};
+    var cur=B.clase(t.estado);
+    var g='<span class="x" onclick="abrirDrw(\''+id+'\')">×</span><div class="idbad"><span class="idb oro">✎ Editando · se guarda en el Sheet</span></div>';
+    g+='<div style="font-size:11px;color:var(--piedra);letter-spacing:1px;">'+B.esc(id)+'</div><h3>'+B.esc(t.nombre)+'</h3>';
+    g+='<div class="idfl"><div class="k">Estado</div><select id="ed_estado">'+["verde","amarillo","rojo"].map(function(o){var m=(o==="verde"&&cur==="verde")||(o==="amarillo"&&cur==="amar")||(o==="rojo"&&cur==="rojo");return '<option'+(m?' selected':'')+'>'+o+'</option>';}).join("")+'</select></div>';
+    g+=inp("Responsable","responsable_nombre",t.responsable_nombre);
+    g+=inp("Oficio / folio","oficio_folio",t.oficio_folio);
+    g+=inp("Fecha inicio (aaaa-mm-dd)","fecha_inicio_est",t.fecha_inicio_est,"2026-07-01");
+    g+=inp("Duración (semanas)","duracion_sem",t.duracion_sem,"4");
+    g+=inp("Fecha terminado (aaaa-mm-dd)","fecha_real_fin",t.fecha_real_fin,"vacío = aún no");
+    g+='<div class="idfl"><div class="k">Por qué importa</div><textarea id="ed_por_que_importa">'+B.esc(t.por_que_importa==null?"":t.por_que_importa)+'</textarea></div>';
+    g+='<div class="idfl"><div class="k">Notas</div><textarea id="ed_notas">'+B.esc(t.notas==null?"":t.notas)+'</textarea></div>';
+    g+=inp("Link de documentos (Drive)","link",t.link,"https://drive.google.com/...");
+    g+='<div class="idsave"><button class="btn ghost" onclick="abrirDrw(\''+id+'\')">Cancelar</button><button class="btn" id="ed_save" onclick="guardarFicha(\''+id+'\')">Guardar</button></div>';
+    B.$("idrw").innerHTML=g;
+  };
+  window.guardarFicha=function(id){
+    var v=function(n){var el=B.$("ed_"+n);return el?el.value:"";};
+    var bt=B.$("ed_save");if(bt){bt.disabled=true;bt.textContent="Guardando…";}
+    B.post({tipo:"tramite",tramite_id:id,secret:editKey(),
+      estado:v("estado"),responsable_nombre:v("responsable_nombre"),oficio_folio:v("oficio_folio"),
+      fecha_inicio_est:v("fecha_inicio_est"),duracion_sem:v("duracion_sem"),fecha_real_fin:v("fecha_real_fin"),
+      por_que_importa:v("por_que_importa"),notas:v("notas"),link:v("link")},
+    function(err,j){
+      if(!err&&j&&j.ok){B.toast("Guardado ✓");window.cerrarDrw();B.refrescar();}
+      else{if(j&&j.error==="clave incorrecta"){try{sessionStorage.removeItem("rm_edit_v1");}catch(e){}B.toast("Clave de edición incorrecta",true);}else B.toast("No se pudo guardar",true);if(bt){bt.disabled=false;bt.textContent="Guardar";}}
+    });
+  };
   chips(); foco();
 };
 Board.init({page:"index",sub:"tablero del proyecto"});
