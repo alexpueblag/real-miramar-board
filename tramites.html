@@ -198,6 +198,14 @@ window.abrirFicha=function(id){
       B.esc(folio)+' — '+B.esc(doc.titulo)+'</a></div>';
     else h+='<div style="margin-top:10px;font-size:12.5px;">Oficio/folio: '+B.esc(folio)+'</div>';
   }
+  /* formato oficial de ingreso (DGIUE/estatal) + entregables */
+  if(String(t.formato_url||"").trim())
+    h+='<div class="nota" style="margin-top:8px;">Formato: '+
+       String(t.formato_url).split(" · ").map(function(u){u=u.trim();
+         return /^https?:/.test(u)?'<a href="'+B.esc(u)+'" target="_blank" rel="noopener">'+B.esc(u.split("/").pop())+'</a>':B.esc(u);
+       }).join(" · ")+'</div>';
+  if(String(t.entregables||"").trim())
+    h+='<div class="nota" style="margin-top:6px;">Entregables: '+B.esc(t.entregables)+'</div>';
   /* costo (solo con clave de vista — nunca en modo público) */
   if(!B.lite()&&String(t.costo_estimado||"").trim())
     h+='<div class="nota" style="margin-top:6px;">Costo estimado: '+B.esc(B.money(t.costo_estimado))+'</div>';
