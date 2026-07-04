@@ -155,8 +155,15 @@ window.renderPage=function(B){
     g+=fld("Autoridad",t.autoridad)+fld("Responsable",t.responsable_nombre)+fld("Oficio / folio",t.oficio_folio)+fld("Por qué importa",t.por_que_importa)+fld("Decisión",t.decision);
     if(deps.length)g+='<div class="idfl"><div class="k">Depende de</div><div class="idch">'+deps.map(function(d){var p=B.tramitePor(d);return '<span class="idcp" onclick="abrirDrw(\''+d+'\')">'+d+(p?(' · '+B.esc(p.nombre)):"")+'</span>';}).join("")+'</div></div>';
     if(desb.length)g+='<div class="idfl"><div class="k">Desbloquea</div><div class="idch">'+desb.map(function(d){var p=B.tramitePor(d);return '<span class="idcp" onclick="abrirDrw(\''+d+'\')">'+d+(p?(' · '+B.esc(p.nombre)):"")+'</span>';}).join("")+'</div></div>';
-    var lk=String(t.link||"").trim();
-    if(/^https?:\/\//i.test(lk))g+='<div class="idfl"><div class="k">Documentos del trámite</div><a class="btn ghost" href="'+B.esc(lk)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-top:4px;">📂 Abrir todo en Drive →</a></div>';
+    var lk=String(t.link||"").trim(), docs="";
+    if(/^https?:\/\//i.test(lk))docs+='<a class="btn ghost" href="'+B.esc(lk)+'" target="_blank" rel="noopener" style="text-decoration:none;display:block;margin:4px 0;">📂 Abrir el documento principal →</a>';
+    var sop=[];try{sop=JSON.parse(t.soportes||"[]");}catch(e){sop=[];}
+    if(sop.length){docs+='<div style="margin-top:8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--piedra);">Soportes ('+sop.length+')</div>'+sop.map(function(s){return /^https?:\/\//i.test(String(s.u||""))?('<a href="'+B.esc(s.u)+'" target="_blank" rel="noopener" style="display:block;font-size:12.5px;padding:2px 0;color:var(--oroc,#C9A86A);text-decoration:none;">📎 '+B.esc(s.t||"archivo")+'</a>'):"";}).join("");}
+    var ent=String(t.entregables||"").trim();
+    if(ent){var eit=ent.split(/[·|\n;]+/).map(function(x){return x.trim();}).filter(Boolean);if(eit.length)docs+='<div style="margin-top:8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--piedra);">Entregables que acompañan el ingreso</div><ul style="margin:3px 0 0;padding-left:16px;font-size:12.5px;line-height:1.55;">'+eit.map(function(x){return '<li>'+B.esc(x)+'</li>';}).join("")+'</ul>';}
+    var fu=String(t.formato_url||"").trim();
+    if(/^https?:\/\//i.test(fu))docs+='<a class="btn ghost" href="'+B.esc(fu)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-top:8px;">📄 Formato oficial (DGIUE) →</a>';
+    if(docs)g+='<div class="idfl"><div class="k">Documentos del trámite</div>'+docs+'</div>';
     g+='<div class="idsave"><a class="btn ghost" href="tramites.html#'+encodeURIComponent(id)+'">Ver en Trámites</a><button class="btn" onclick="editarFicha(\''+id+'\')">✎ Editar</button></div>';
     B.$("idrw").innerHTML=g; B.$("idrw").className="on"; B.$("idrwov").className="on";
   };
