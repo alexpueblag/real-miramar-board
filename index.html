@@ -7,7 +7,7 @@
 <title>Inicio · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=5">
+<link rel="stylesheet" href="assets/estilo.css?v=6">
 </head>
 <body>
 <div id="nav"></div>
@@ -185,6 +185,8 @@ window.renderPage=function(B){
     var id=t.tramite_id, cl=B.clase(t.estado), estTxt=cl==='verde'?'hecho':(cl==='amar'?'en proceso':'falta');
     var deps=String(t.depende_de||"").split(/[,;\s]+/).filter(Boolean), desb=CH[id]||[], rc=String(t.ruta_critica||'').toLowerCase();
     var ico=String(t.icono||"").trim();
+    var botonesH='<div class="idsave"><a class="btn ghost" href="tramites.html#'+encodeURIComponent(id)+'">Ver en Trámites</a>'+(adminKey()?'<button class="btn ghost" onclick="sistemaFicha(\''+id+'\')">⚙ Sistema</button>':'')+'<button class="btn" onclick="editarFicha(\''+id+'\')">✎ Editar</button></div>';
+    var hayBot=false;
     var g='<span class="x" onclick="cerrarDrw()">×</span>';
     tplDe(t).forEach(function(tok){
       if(tok==='badges')g+='<div class="idbad"><span class="idb">'+B.esc(t.paquete_etapa||"trámite")+'</span>'+(/^si/i.test(String(t.urgente))?'<span class="idb urg">urgente</span>':'')+((rc&&rc!=='no')?('<span class="idb oro">'+(rc==='banco'?'🏦 ruta banco':'🏗 ruta física')+'</span>'):'')+'</div>';
@@ -196,9 +198,10 @@ window.renderPage=function(B){
       else if(tok==='desbloquea'){if(desb.length)g+='<div class="idfl"><div class="k">Desbloquea</div><div class="idch">'+chipsDe(desb)+'</div></div>';}
       else if(tok==='docs')g+=docsHTML(t);
       else if(tok==='extras')g+=extrasHTML(t);
-      else if(tok==='botones'){g+='<div class="idsave"><a class="btn ghost" href="tramites.html#'+encodeURIComponent(id)+'">Ver en Trámites</a>'+(adminKey()?'<button class="btn ghost" onclick="sistemaFicha(\''+id+'\')">⚙ Sistema</button>':'')+'<button class="btn" onclick="editarFicha(\''+id+'\')">✎ Editar</button></div>';}
+      else if(tok==='botones'){g+=botonesH;hayBot=true;}
       else g+=fldHTML(t,tok);
     });
+    if(!hayBot)g+=botonesH; // red de seguridad: la ficha SIEMPRE trae acciones
     return g;
   }
   window.abrirDrw=function(id){
