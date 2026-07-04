@@ -198,6 +198,13 @@ window.abrirFicha=function(id){
       B.esc(folio)+' — '+B.esc(doc.titulo)+'</a></div>';
     else h+='<div style="margin-top:10px;font-size:12.5px;">Oficio/folio: '+B.esc(folio)+'</div>';
   }
+  /* evidencia anclada: documento principal + soportes (Drive) */
+  var lkp=String(t.link||"").trim();
+  if(/^https?:\/\//i.test(lkp))
+    h+='<div style="margin-top:10px;font-size:12.5px;">📂 <a href="'+B.esc(lkp)+'" target="_blank" rel="noopener">Documento principal en Drive</a></div>';
+  var sopp=[];try{sopp=JSON.parse(t.soportes||"[]");}catch(e){sopp=[];}
+  if(sopp.length)
+    h+='<div class="nota" style="margin-top:6px;">Soportes: '+sopp.map(function(s){return /^https?:\/\//i.test(String(s.u||""))?('<a href="'+B.esc(s.u)+'" target="_blank" rel="noopener">'+B.esc(s.t||"archivo")+'</a>'):"";}).filter(Boolean).join(" · ")+'</div>';
   /* formato oficial de ingreso (DGIUE/estatal) + entregables */
   if(String(t.formato_url||"").trim())
     h+='<div class="nota" style="margin-top:8px;">Formato: '+
