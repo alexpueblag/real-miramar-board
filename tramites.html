@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex">
 <title>Trámites · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/estilo.css?v=3">
 </head>
 <body>
 <div id="nav"></div>
@@ -308,10 +308,10 @@ function pintarMapa(B){
     col.forEach(function(id,i){pos[id]={x:PADX+d*CW,y:PADY+i*RH};});
   }
   var W=PADX*2+maxD*CW+NW,H=PADY*2+Math.max(1,maxRows)*RH;
-  var colores={verde:"#3f7a5f",amar:"#b07d3a",rojo:"#a8503f",gris:"#8b8782"};
+  var colores={verde:"#8FBF8B",amar:"#D9A45B",rojo:"#E0605A",gris:"#8a8780"};
   var s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="mapaT" style="width:100%;height:auto;max-width:'+W+'px;">';
   s+='<title id="mapaT">Mapa de dependencias de los gates de la etapa: '+B.esc(cur.nombre||cur.hito_id)+'</title>';
-  s+='<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8b8782"/></marker></defs>';
+  s+='<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a8780"/></marker></defs>';
   /* flechas primero (debajo de las cajas) */
   orden.forEach(function(id){
     String(set[id].depende_de||"").split(",").forEach(function(dep){
@@ -319,7 +319,7 @@ function pintarMapa(B){
       if(!dep||!pos[dep]||!pos[id])return;
       var a=pos[dep],b=pos[id];
       s+='<line x1="'+(a.x+NW)+'" y1="'+(a.y+NH/2)+'" x2="'+b.x+'" y2="'+(b.y+NH/2)+
-         '" stroke="#8b8782" stroke-width="1.4" marker-end="url(#arr)"/>';
+         '" stroke="#8a8780" stroke-width="1.4" marker-end="url(#arr)"/>';
     });
   });
   /* nodos */
@@ -331,7 +331,7 @@ function pintarMapa(B){
     s+='<g onclick="abrirFicha(\''+idSafe(id)+'\')" style="cursor:pointer;">'+
       '<title>'+B.esc(t.nombre||id)+'</title>'+
       '<rect x="'+p.x+'" y="'+p.y+'" width="'+NW+'" height="'+NH+'" rx="8" fill="'+c+'"/>'+
-      '<text x="'+(p.x+NW/2)+'" y="'+(p.y+NH/2+3.5)+'" text-anchor="middle" fill="#ffffff" font-family="Poppins,Arial,sans-serif" font-size="10.5">'+B.esc(nom)+'</text></g>';
+      '<text x="'+(p.x+NW/2)+'" y="'+(p.y+NH/2+3.5)+'" text-anchor="middle" fill="#0a0a0c" font-family="Manrope,Arial,sans-serif" font-size="10.5">'+B.esc(nom)+'</text></g>';
   });
   s+='</svg>';
   cont.innerHTML='<div class="card" style="overflow-x:auto;">'+s+
