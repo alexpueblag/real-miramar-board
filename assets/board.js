@@ -11,7 +11,7 @@
 
 var CONFIG={
   SHEET_URL:"https://script.google.com/macros/s/AKfycbwrV75GBbnq4-TFe3bPLHp7U7LSPEeYJIAPP2eKJIFcJb7tcBEN0HgzKak1vxF4jvnk/exec",
-  VIEW_KEY:"MiramarYOD-2026" /* clave de VISTA (seguridad suave). Las claves financiera/escritura JAMÁS van aquí: las valida el servidor. */
+  VIEW_KEY:"Yodesarrollo1" /* clave de VISTA (seguridad suave). Las claves financiera/escritura JAMÁS van aquí: las valida el servidor. */
 };
 var CACHE_KEY="rm_cache_v3", UNLOCK_KEY="rm_unlock_v1", FIN_KEY="rm_fin_v1";
 var TTL=90000, FETCH_TIMEOUT=15000;
