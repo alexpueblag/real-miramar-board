@@ -80,7 +80,8 @@ window.renderPage=function(B){
     {k:'banco',t:'🏦 Banco',f:function(t){return String(t.ruta_critica||'').toLowerCase()==='banco';}},
     {k:'fisica',t:'🏗 Física / obra',f:function(t){return String(t.ruta_critica||'').toLowerCase()==='fisica';}},
     {k:'etapa',t:'📍 Etapa actual',f:function(t){return String(t.paquete_etapa||'')===cur&&B.clase(t.estado)!=='verde';}},
-    {k:'resp',t:'👤 Por responsable',f:function(t){return B.clase(t.estado)!=='verde';},grupo:true},
+    {k:'resp',t:'👤 Por responsable',f:function(t){return B.clase(t.estado)!=='verde';},grupo:true,campo:'responsable_nombre',sinLabel:'Sin responsable'},
+    {k:'dep',t:'🏛️ Por dependencia',f:function(t){return true;},grupo:true,campo:'dependencia',sinLabel:'Sin dependencia asignada'},
     {k:'falta',t:'Todo lo que falta',f:function(t){return B.clase(t.estado)!=='verde';}},
     {k:'todo',t:'Todo',f:function(t){return true;}}
   ];
@@ -107,9 +108,11 @@ window.renderPage=function(B){
   function foco(){
     var lens=LENTES.filter(function(l){return l.k===SEL;})[0], lista=tr.filter(lens.f);
     if(lens.grupo){
-      var by={}; lista.forEach(function(t){var r=t.responsable_nombre||"Sin responsable";(by[r]=by[r]||[]).push(t);});
+      var campo=lens.campo||'responsable_nombre', sinL=lens.sinLabel||'Sin asignar';
+      var by={}; lista.forEach(function(t){var r=t[campo]||sinL;(by[r]=by[r]||[]).push(t);});
       var keys=Object.keys(by).sort(function(a,b){return by[b].length-by[a].length;});
-      var hg='<div class="ifhead"><b>'+keys.length+'</b> responsables · '+lista.length+' pendientes repartidos</div>';
+      var pend=lista.filter(function(t){return B.clase(t.estado)!=='verde';}).length;
+      var hg='<div class="ifhead"><b>'+keys.length+'</b> grupos · '+lista.length+' trámites'+(pend<lista.length?(' ('+pend+' por cerrar)'):'')+'</div>';
       keys.forEach(function(r){hg+='<div class="igrp"><div class="igrph">'+B.esc(r)+' · '+by[r].length+'</div>'+by[r].map(fila).join("")+'</div>';});
       B.$("ifoco").innerHTML=hg;
       Array.prototype.forEach.call(document.querySelectorAll('#ifoco .ifrow'),function(el){el.onclick=function(){abrirDrw(el.getAttribute('data-id'));};});
