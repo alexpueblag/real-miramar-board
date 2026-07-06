@@ -22,6 +22,7 @@
   <div id="secDocs"></div>
 
   <div id="secCruce"></div>
+  <div id="secFuentes"></div>
 </main>
 <footer>Real de Miramar · tablero del proyecto — datos administrados desde el Google Sheet Maestro.<div id="stamp" style="margin-top:4px;"></div></footer>
 <script src="assets/board.js"></script>
@@ -165,6 +166,34 @@ window.renderPage=function(B){
     });
     var h='<h2 class="sec" id="cruce">Cruce folio &harr; papel &harr; video</h2>';
     if(!filas){el.innerHTML=h+'<div class="nota">Sin folios con evidencia cruzada por ahora.</div>';return;}
+    el.innerHTML=h+'<div class="card">'+filas+'</div>';
+  })();
+
+  /* ---------- 5. SUSTENTO NORMATIVO (bloque ## FUENTES del Sheet) ---------- */
+  (function(){
+    var el=B.$("secFuentes");if(!el)return;
+    var fu=B.tabla("FUENTES");
+    var h='<h2 class="sec" id="fuentes">Sustento normativo · de dónde sale cada dato</h2>';
+    if(!fu.length){el.innerHTML=h+'<div class="nota">Sin fuentes registradas en el Sheet.</div>';return;}
+    var carp=null, filas="";
+    fu.forEach(function(f){
+      if(String(f.fuente_id)==="F00"){carp=f;return;}
+      var u=String(f.url_oficial||"").trim(), ld=String(f.link_drive||"").trim();
+      var nom=/^https?:\/\//i.test(u)?('<a href="'+B.esc(u)+'" target="_blank" rel="noopener">'+B.esc(f.nombre)+'</a>'):B.esc(f.nombre);
+      var der='<span class="chip cat" style="cursor:default;">'+B.esc(f.tipo)+'</span> ';
+      if(/^https?:\/\//i.test(ld))der+='<a class="chip" style="text-decoration:none;" href="'+B.esc(ld)+'" target="_blank" rel="noopener">📄 PDF en Drive</a>';
+      else if(/pendiente/i.test(ld))der+='<span class="nota" style="color:var(--amar);">⏳ PDF pendiente</span>';
+      var tra=String(f.tramites||"").split(/[,\s]+/).filter(function(x){return /^T\d+$/i.test(x);})
+        .map(function(t){return '<a class="chip" style="text-decoration:none;" href="tramites.html#'+encodeURIComponent(t)+'">'+B.esc(t)+'</a>';}).join(" ");
+      filas+='<div class="docrow" style="align-items:flex-start;">'+
+        '<div><b style="font-size:11px;letter-spacing:.5px;color:var(--oroc);">'+B.esc(f.fuente_id)+'</b> '+nom+
+        (f.donde_dice&&f.donde_dice!=="—"?(' <span class="nota">· '+B.esc(f.donde_dice)+'</span>'):'')+
+        '<div class="nota" style="margin-top:2px;max-width:640px;">'+B.esc(f.resumen||"")+'</div>'+
+        (tra?('<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">'+tra+'</div>'):'')+
+        '</div><div style="text-align:right;white-space:nowrap;">'+der+'</div></div>';
+    });
+    if(carp&&/^https?:\/\//i.test(String(carp.link_drive)))
+      h+='<div class="hint" style="margin-bottom:8px;">Cada requisito y pago de los checklists cita aquí su fuente (ley/artículo o formato oficial). <a href="'+B.esc(carp.link_drive)+'" target="_blank" rel="noopener">📂 Abrir la carpeta de PDFs en Drive →</a></div>';
     el.innerHTML=h+'<div class="card">'+filas+'</div>';
   })();
 };
