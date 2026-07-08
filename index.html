@@ -39,7 +39,8 @@ window.renderPage=function(B){
   h+='<div class="ilg"><span>'+verde+' de '+tr.length+' trámites hechos</span><b>'+(tr.length?Math.round(verde/tr.length*100):0)+'%</b></div></div>';
   // tiempo
   var banda=B.config("banda_tiempos");
-  h+='<div class="idcard"><div class="k">Tiempo a la venta</div><div class="big">22–26 <small>meses</small></div>';
+  var bm=String(banda||"").match(/(\d+\s*[–-]\s*\d+)\s*meses/); // el rango sale del Sheet, no del HTML
+  h+='<div class="idcard"><div class="k">Tiempo a la venta</div><div class="big">'+(bm?B.esc(bm[1].replace(/\s*-\s*/,"–")):"—")+' <small>meses</small></div>';
   h+='<div class="s2">'+B.esc(banda?banda.replace(/^P50:\s*/,"").split(".")[0]:"estimado a recepción de obra")+'</div>';
   h+='<div class="ibar"><i style="width:14%"></i></div><div class="ilg"><span>llevamos ~3 meses</span><b>falta la mayor parte</b></div></div>';
   // dinero
