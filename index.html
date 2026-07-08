@@ -191,14 +191,14 @@ window.renderPage=function(B){
     if(sop.length){docs+='<div class="dchd">Soportes ('+sop.length+')</div>'+sop.map(function(s){return /^https?:\/\//i.test(String(s.u||""))?('<a href="'+B.esc(s.u)+'" target="_blank" rel="noopener" style="display:block;font-size:12.5px;padding:2px 0;color:var(--oroc,#e0c590);text-decoration:none;">📎 '+B.esc(s.t||"archivo")+'</a>'):"";}).join("");}
     var items=entItems(t);
     if(items.length){docs+='<div class="dchd">Entregables que acompañan el ingreso</div>';items.forEach(function(it,i){var si=/=si$/i.test(it);var txt=it.replace(/=(si|no)$/i,'').trim();docs+='<div class="ichk" onclick="toggleEnt(\''+t.tramite_id+'\','+i+')"><span class="bx">'+(si?'☑':'☐')+'</span> '+B.esc(txt)+'</div>';});}
-    var fu=String(t.formato_url||"").trim();
-    if(fu){
-      var fus=fu.split(/\s*[·|\n;]\s*/).map(function(x){return x.trim();}).filter(function(x){return /^https?:\/\//i.test(x);});
-      fus.forEach(function(u,i){
-        var lbl=fus.length>1?('📄 Formato oficial '+(i+1)+'/'+fus.length+' (DGIUE) →'):'📄 Formato oficial (DGIUE) →';
-        docs+='<a class="btn ghost" href="'+B.esc(u)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-top:8px;margin-right:6px;">'+lbl+'</a>';
-      });
-    }
+    /* formato_url es prosa con URLs incrustadas ("Hidrantes https://… · drenaje: CEA
+       (ventanilla)"). Se EXTRAEN todas las URLs; la prosa sin URL no da botón. */
+    var fu=String(t.formato_url||"");
+    var fus=(fu.match(/https?:\/\/[^\s)]+/g)||[]).map(function(u){return u.replace(/[.,;·]+$/,"");});
+    fus.forEach(function(u,i){
+      var lbl=fus.length>1?('📄 Formato oficial '+(i+1)+'/'+fus.length+' (DGIUE) →'):'📄 Formato oficial (DGIUE) →';
+      docs+='<a class="btn ghost" href="'+B.esc(u)+'" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-top:8px;margin-right:6px;">'+lbl+'</a>';
+    });
     return docs?('<div class="idfl"><div class="k">Documentos del trámite</div>'+docs+'</div>'):'';
   }
   function renderFicha(t){
