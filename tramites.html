@@ -51,7 +51,7 @@ function mapaEtapas(B){var m={};B.hitosOrd().forEach(function(h,i){m[String(h.hi
 function pintarEtapas(B){
   var cont=B.$("secEtapas");if(!cont)return;
   var hs=B.hitosOrd();
-  cont.innerHTML='<div class="techlegend"><span class="techintro">Ruta de desbloqueo</span>'+hs.map(function(h,i){return '<span class="techstep e'+(i%6)+'"><i>◆</i>'+B.esc(h.nombre||h.hito_id)+'</span>';}).join('<b>→</b>')+'</div>';
+  cont.innerHTML='<div class="techlegend"><span class="techintro">Filtrar etapa</span>'+hs.map(function(h,i){var f='etapa:'+idSafe(h.hito_id),on=FILTRO===f;return '<button type="button" class="techstep e'+(i%6)+(on?' on':'')+'" aria-pressed="'+(on?'true':'false')+'" onclick="setFiltroEtapa(\''+idSafe(h.hito_id)+'\')"><i>◆</i>'+B.esc(h.nombre||h.hito_id)+'</button>';}).join('<b>→</b>')+'</div>';
 }
 
 /* ---------- acordeón de puertas ---------- */
@@ -107,8 +107,9 @@ function pintarAtacables(B){
 /* ---------- 3. SEMÁFORO: filtros + grid ---------- */
 window.setFiltro=function(f){
   FILTRO=String(f||"todos");
-  if(BREF){pintarFiltros(BREF);pintarGrid(BREF);}
+  if(BREF){pintarEtapas(BREF);pintarFiltros(BREF);pintarGrid(BREF);}
 };
+window.setFiltroEtapa=function(id){var f="etapa:"+idSafe(id);setFiltro(FILTRO===f?"todos":f);};
 window.setVista=function(v){
   VISTA=v==="lista"?"lista":"board";
   var a=document.getElementById("vBoard"),b=document.getElementById("vLista");
@@ -130,8 +131,8 @@ function pintarFiltros(B){
     ["urgente","Urgentes",nUrg]
   ];
   B.hitosOrd().forEach(function(h){
-    var g=B.gatesDe(h.hito_id);
-    if(g.length>0)chips.push(["etapa:"+idSafe(h.hito_id),String(h.nombre||h.hito_id),g.length]);
+    var n=ts.filter(function(t){return String(t.paquete_etapa||"")===String(h.hito_id||"");}).length;
+    if(n>0)chips.push(["etapa:"+idSafe(h.hito_id),String(h.nombre||h.hito_id),n]);
   });
   cont.innerHTML=chips.map(function(ch){
     return '<span class="chip'+(FILTRO===ch[0]?" on":"")+'" onclick="setFiltro(\''+ch[0].replace(/'/g,"")+'\')">'+
