@@ -205,6 +205,14 @@ window.abrirFicha=function(id){
   var sopp=[];try{sopp=JSON.parse(t.soportes||"[]");}catch(e){sopp=[];}
   if(sopp.length)
     h+='<div class="nota" style="margin-top:6px;">Soportes: '+sopp.map(function(s){return /^https?:\/\//i.test(String(s.u||""))?('<a href="'+B.esc(s.u)+'" target="_blank" rel="noopener">'+B.esc(s.t||"archivo")+'</a>'):"";}).filter(Boolean).join(" · ")+'</div>';
+  var canon=B.docsDeTramite(t.tramite_id);
+  if(canon.length){
+    h+='<div class="nota" style="margin-top:10px;">Documentos canónicos</div>';
+    canon.forEach(function(d){var u=B.docUrl(d),m=B.docMeta(d);if(!u)return;
+      h+='<div style="font-size:12.5px;margin-top:4px;"><a href="'+B.esc(u)+'" target="_blank" rel="noopener">📄 '+B.esc(d.titulo||"Documento")+'</a>'+
+        (m&&/^si$/i.test(m.listo_imprimir)?' <span class="chip cat" style="cursor:default;">listo para imprimir</span>':'')+'</div>';
+    });
+  }
   /* formato oficial de ingreso (DGIUE/estatal) + entregables */
   if(String(t.formato_url||"").trim())
     h+='<div class="nota" style="margin-top:8px;">Formato: '+
