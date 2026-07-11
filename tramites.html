@@ -7,7 +7,7 @@
 <title>Trámites · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=8">
+<link rel="stylesheet" href="assets/estilo.css?v=9">
 </head>
 <body>
 <div id="nav"></div>
@@ -21,7 +21,7 @@
     <div id="secAtac"></div>
   </section>
   <section>
-    <h2 class="sec">Semáforo de trámites</h2>
+    <div class="secrow"><h2 class="sec">Tablero de trámites</h2><div class="viewtoggle" role="group" aria-label="Vista"><button id="vBoard" class="on" onclick="setVista('board')">Por dependencia</button><button id="vLista" onclick="setVista('lista')">Lista</button></div></div>
     <div id="secFiltros" class="filtros"></div>
     <div id="secGrid"></div>
   </section>
@@ -39,6 +39,7 @@
    ============================================================ */
 var BREF=null;      /* referencia a Board para handlers globales */
 var FILTRO="todos"; /* estado del filtro del semáforo */
+var VISTA="board";  /* la fuente sigue siendo Sheets; esto solo cambia la presentación */
 var WIRED=false;    /* evita listeners duplicados en re-render */
 
 /* ---------- utilidades locales ---------- */
@@ -101,6 +102,12 @@ window.setFiltro=function(f){
   FILTRO=String(f||"todos");
   if(BREF){pintarFiltros(BREF);pintarGrid(BREF);}
 };
+window.setVista=function(v){
+  VISTA=v==="lista"?"lista":"board";
+  var a=document.getElementById("vBoard"),b=document.getElementById("vLista");
+  if(a)a.className=VISTA==="board"?"on":"";if(b)b.className=VISTA==="lista"?"on":"";
+  if(BREF)pintarGrid(BREF);
+};
 function pintarFiltros(B){
   var cont=B.$("secFiltros");if(!cont)return;
   var c=B.conteos();
@@ -139,7 +146,7 @@ function pintarGrid(B){
   if(!ts.length){cont.innerHTML='<div class="nota">Sin trámites cargados en el Sheet.</div>';return;}
   var vis=ts.filter(function(t){return pasaFiltro(B,t);});
   if(!vis.length){cont.innerHTML='<div class="nota">Ningún trámite coincide con este filtro.</div>';return;}
-  cont.innerHTML='<div class="tgrid">'+vis.map(function(t){
+  function tarjeta(t,compacta){
     var cl=B.clase(t.estado);
     var ola=String(t.ola||"").trim();
     var badges='';
@@ -147,11 +154,20 @@ function pintarGrid(B){
     if(ola&&!/^(HECHO|COND)$/i.test(ola))badges+='<span class="olab">ola '+B.esc(ola)+'</span>';
     if(esSi(t.gate))badges+='<span class="olab">🔑 gate</span>';
     if(esSi(t.urgente)&&cl!=="verde")badges+='<span class="olab warn">urgente</span>';
-    return '<div class="tcard '+cl+'" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')">'+
+    var docs=B.docsDeTramite(t.tramite_id).length;
+    return '<div class="tcard '+cl+(compacta?' compacta':'')+'" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')">'+
       '<span class="st"><span class="p"></span>'+B.esc(t.estado||"—")+'</span>'+
       '<h4>'+B.esc(t.nombre)+'</h4>'+
       (badges?'<div style="margin:2px 0 5px;">'+badges+'</div>':"")+
-      '<div class="meta">'+B.esc(t.autoridad||"—")+' · '+B.esc(t.responsable_nombre||"—")+'</div></div>';
+      '<div class="meta">'+B.esc(t.tramite_id||"")+(t.fecha_inicio_est?' · '+B.esc(B.fmtFecha(t.fecha_inicio_est)):'')+'</div>'+
+      (docs?'<div class="doccount">📄 '+docs+' documento'+(docs===1?'':'s')+'</div>':'')+'</div>';
+  }
+  if(VISTA==="lista"){cont.innerHTML='<div class="tgrid">'+vis.map(function(t){return tarjeta(t,false);}).join("")+'</div>';return;}
+  var grupos={},orden=[];
+  vis.forEach(function(t){var d=String(t.dependencia||t.autoridad||"Sin dependencia").trim()||"Sin dependencia";if(!grupos[d]){grupos[d]=[];orden.push(d);}grupos[d].push(t);});
+  cont.innerHTML='<div class="kanban" aria-label="Trámites agrupados por dependencia">'+orden.map(function(d){
+    var xs=grupos[d],pend=xs.filter(function(t){return B.clase(t.estado)!=="verde";}).length;
+    return '<section class="kcol"><header class="khead"><h3>'+B.esc(d)+'</h3><span>'+xs.length+' · '+pend+' pendientes</span></header><div class="kbody">'+xs.map(function(t){return tarjeta(t,true);}).join("")+'</div></section>';
   }).join("")+'</div>';
 }
 

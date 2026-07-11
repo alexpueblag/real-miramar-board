@@ -92,6 +92,7 @@ header{background:#121215;border-bottom:1px solid var(--linea);padding:10px 18px
 
 /* ---------- tarjetas de trámite / ficha ---------- */
 .filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.secrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:28px;flex-wrap:wrap}.secrow h2.sec{margin:0}.viewtoggle{display:flex;border:1px solid var(--linea);border-radius:18px;overflow:hidden}.viewtoggle button{border:0;background:transparent;color:var(--carbon);padding:6px 12px;font:11px 'Manrope',sans-serif;cursor:pointer}.viewtoggle button.on{background:var(--negro);color:#0a0a0c}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;}
 .tcard{background:#16161a;border:1px solid var(--linea);border-radius:9px;padding:12px 14px;border-left:5px solid var(--piedra);cursor:pointer;}
 .tcard.verde{border-left-color:var(--verde);} .tcard.amar{border-left-color:var(--amar);} .tcard.rojo{border-left-color:var(--rojo);}
@@ -100,6 +101,7 @@ header{background:#121215;border-bottom:1px solid var(--linea);padding:10px 18px
 .tcard .st .p{width:8px;height:8px;border-radius:50%;}
 .tcard.verde .st .p{background:var(--verde);} .tcard.amar .st .p{background:var(--amar);} .tcard.rojo .st .p{background:var(--rojo);}
 .tcard .meta{font-size:11px;color:var(--piedra);}
+.tcard.compacta{padding:10px 11px}.tcard.compacta h4{font-size:12.5px}.doccount{font-size:10px;color:var(--oro);margin-top:6px}.kanban{display:flex;gap:12px;overflow-x:auto;align-items:flex-start;padding:2px 1px 14px;scroll-snap-type:x proximity}.kcol{flex:0 0 286px;background:#121215;border:1px solid var(--linea);border-radius:11px;overflow:hidden;scroll-snap-align:start}.khead{position:static;display:block;background:#1d1d22;border:0;border-bottom:1px solid var(--linea);padding:11px 12px}.khead h3{font-family:'Instrument Serif',Georgia,serif;font-size:15px;font-weight:400;line-height:1.2;margin:0;color:var(--negro)}.khead span{display:block;font-size:9.5px;color:var(--piedra);margin-top:3px}.kbody{display:flex;flex-direction:column;gap:8px;padding:9px;max-height:68vh;overflow-y:auto}.kbody .tcard{width:100%}
 .olab{display:inline-block;font-size:9px;letter-spacing:.5px;border:1px solid var(--linea);border-radius:9px;padding:1px 7px;color:var(--carbon);background:var(--arena);margin-right:4px;}
 .olab.warn{border-color:var(--rojo);color:var(--rojo);}
 .ficha{background:#16161a;border:1px solid var(--linea);border-left:5px solid var(--piedra);border-radius:0 10px 10px 0;padding:14px 16px;}
