@@ -7,7 +7,7 @@
 <title>Trámites · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=9">
+<link rel="stylesheet" href="assets/estilo.css?v=10">
 </head>
 <body>
 <div id="nav"></div>
@@ -22,6 +22,7 @@
   </section>
   <section>
     <div class="secrow"><h2 class="sec">Tablero de trámites</h2><div class="viewtoggle" role="group" aria-label="Vista"><button id="vBoard" class="on" onclick="setVista('board')">Por dependencia</button><button id="vLista" onclick="setVista('lista')">Lista</button></div></div>
+    <div id="secEtapas"></div>
     <div id="secFiltros" class="filtros"></div>
     <div id="secGrid"></div>
   </section>
@@ -46,6 +47,12 @@ var WIRED=false;    /* evita listeners duplicados en re-render */
 function idSafe(id){return String(id==null?"":id).replace(/[^\w\.\-]/g,"");}
 function dotVar(cl){return cl==="gris"?"piedra":cl;} /* var(--gris) no existe */
 function esSi(v){return /^si/i.test(String(v||"").trim());}
+function mapaEtapas(B){var m={};B.hitosOrd().forEach(function(h,i){m[String(h.hito_id||"").trim()]={h:h,i:i};});return m;}
+function pintarEtapas(B){
+  var cont=B.$("secEtapas");if(!cont)return;
+  var hs=B.hitosOrd();
+  cont.innerHTML='<div class="techlegend"><span class="techintro">Ruta de desbloqueo</span>'+hs.map(function(h,i){return '<span class="techstep e'+(i%6)+'"><i>◆</i>'+B.esc(h.nombre||h.hito_id)+'</span>';}).join('<b>→</b>')+'</div>';
+}
 
 /* ---------- acordeón de puertas ---------- */
 window.togglePta=function(cab){
@@ -146,16 +153,19 @@ function pintarGrid(B){
   if(!ts.length){cont.innerHTML='<div class="nota">Sin trámites cargados en el Sheet.</div>';return;}
   var vis=ts.filter(function(t){return pasaFiltro(B,t);});
   if(!vis.length){cont.innerHTML='<div class="nota">Ningún trámite coincide con este filtro.</div>';return;}
+  var em=mapaEtapas(B);
   function tarjeta(t,compacta){
     var cl=B.clase(t.estado);
     var ola=String(t.ola||"").trim();
     var badges='';
-    if(String(t.paquete_etapa||"").trim())badges+='<span class="olab">'+B.esc(t.paquete_etapa)+'</span>';
+    var etapa=em[String(t.paquete_etapa||"").trim()]||null;
+    if(etapa)badges+='<span class="stagebadge e'+(etapa.i%6)+'"><i>◆</i> Desbloquea '+B.esc(etapa.h.nombre||etapa.h.hito_id)+'</span>';
+    else if(String(t.paquete_etapa||"").trim())badges+='<span class="stagebadge cond"><i>◇</i> '+B.esc(t.paquete_etapa)+'</span>';
     if(ola&&!/^(HECHO|COND)$/i.test(ola))badges+='<span class="olab">ola '+B.esc(ola)+'</span>';
     if(esSi(t.gate))badges+='<span class="olab">🔑 gate</span>';
     if(esSi(t.urgente)&&cl!=="verde")badges+='<span class="olab warn">urgente</span>';
     var docs=B.docsDeTramite(t.tramite_id).length;
-    return '<div class="tcard '+cl+(compacta?' compacta':'')+'" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')">'+
+    return '<div class="tcard '+cl+(etapa?' tech-e'+(etapa.i%6):'')+(compacta?' compacta':'')+'" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')">'+
       '<span class="st"><span class="p"></span>'+B.esc(t.estado||"—")+'</span>'+
       '<h4>'+B.esc(t.nombre)+'</h4>'+
       (badges?'<div style="margin:2px 0 5px;">'+badges+'</div>':"")+
@@ -365,6 +375,7 @@ function pintarMapa(B){
 /* ---------- render principal (puede llamarse varias veces) ---------- */
 window.renderPage=function(B){
   BREF=B;
+  pintarEtapas(B);
   pintarLegal(B);
   pintarAtacables(B);
   pintarFiltros(B);
