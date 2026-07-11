@@ -117,13 +117,14 @@ window.renderPage=function(B){
     }
     h+='<div class="card">';
     docs.forEach(function(d){
-      var did=String(d.doc_id||"").trim();
-      var tit=did?('<a href="https://drive.google.com/file/d/'+encodeURIComponent(did)+'/view" target="_blank" rel="noopener">'+B.esc(d.titulo)+'</a>'):B.esc(d.titulo);
+      var du=B.docUrl(d),dm=B.docMeta(d);
+      var tit=du?('<a href="'+B.esc(du)+'" target="_blank" rel="noopener">'+B.esc(d.titulo)+'</a>'):B.esc(d.titulo);
       var notas=String(d.notas||"");
       if(notas.length>90)notas=notas.slice(0,90)+"…";
       h+='<div class="docrow">'+
         '<div>'+tit+(notas?(' <span class="nota">'+B.esc(notas)+'</span>'):'')+'</div>'+
         '<div><span class="chip cat" style="cursor:default;">'+B.esc(d.categoria)+'</span>'+
+        (dm&&/^si$/i.test(dm.listo_imprimir)?' <span class="chip" style="cursor:default;">🖨 listo</span>':'')+
         (d.fecha_mod?(' <span class="nota">'+B.esc(B.fmtFecha(d.fecha_mod))+'</span>'):'')+'</div>'+
         '</div>';
     });

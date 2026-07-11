@@ -182,6 +182,19 @@ function videosPor(){
   return m;
 }
 function docsVigentes(){return tabla("DOCS").filter(function(x){return /^si/i.test(String(x.es_vigente||"").trim());});}
+function docMeta(d){
+  var n=String(d&&d.notas||""),m=n.match(/\[CANONICO:([^|\]]+)\|TRAMITES:([^|\]]*)\|IMPRIMIR:([^\]]+)\]/i);
+  return m?{documento_id:m[1].trim(),tramites:m[2].split(",").map(function(x){return x.trim();}).filter(Boolean),listo_imprimir:m[3].trim()}:null;
+}
+function docUrl(d){
+  var id=String(d&&d.doc_id||"").trim();
+  if(/^https?:\/\//i.test(id))return id;
+  return id?("https://drive.google.com/file/d/"+encodeURIComponent(id)+"/view"):"";
+}
+function docsDeTramite(id){
+  id=String(id||"").trim();
+  return docsVigentes().filter(function(d){var m=docMeta(d);return m&&(m.tramites.indexOf(id)>=0||m.tramites.indexOf("TODOS")>=0);});
+}
 function tramitePor(id){var t=null;tabla("TRAMITES").forEach(function(x){if(String(x.tramite_id).trim()===String(id).trim())t=x;});return t;}
 
 /* ---------- escritura (solo dirección) ---------- */
@@ -217,7 +230,7 @@ window.Board={init:init,tabla:tabla,config:config,resumen:resumen,meta:meta,
   hitosOrd:hitosOrd,etapaActual:etapaActual,gatesDe:gatesDe,conteos:conteos,
   frontera:frontera,etaDe:etaDe,fmtEta:fmtEta,etaEtapa:etaEtapa,
   puertasCalc:puertasCalc,ventaHabilitada:ventaHabilitada,videosPor:videosPor,
-  docsVigentes:docsVigentes,tramitePor:tramitePor,
+  docsVigentes:docsVigentes,docMeta:docMeta,docUrl:docUrl,docsDeTramite:docsDeTramite,tramitePor:tramitePor,
   lite:lite,unlocked:unlocked,fin:function(){return FIN;},post:post,
   modal:modal,cerrarModal:cerrarModal,toast:toast,refrescar:refrescar,
   $:$, esc:esc, money:money, clase:clase, fmtFecha:fmtFecha};
