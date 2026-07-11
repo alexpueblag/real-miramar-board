@@ -7,29 +7,20 @@
 <title>Trámites · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=10">
+<link rel="stylesheet" href="assets/estilo.css?v=11">
 </head>
 <body>
 <div id="nav"></div>
 <main id="app">
   <section>
-    <h2 class="sec" id="legal">Puerta legal</h2>
-    <div id="secLegal"></div>
-  </section>
-  <section>
-    <h2 class="sec">Atacables ahora</h2>
-    <div id="secAtac"></div>
-  </section>
-  <section>
-    <div class="secrow"><h2 class="sec">Tablero de trámites</h2><div class="viewtoggle" role="group" aria-label="Vista"><button id="vBoard" class="on" onclick="setVista('board')">Por dependencia</button><button id="vLista" onclick="setVista('lista')">Lista</button></div></div>
+    <div id="secResumen"></div>
     <div id="secEtapas"></div>
-    <div id="secFiltros" class="filtros"></div>
+    <div class="viewtoggle worktabs" role="group" aria-label="Vista"><button id="vTrabajo" class="on" onclick="setVista('trabajo')">Trabajo de etapa</button><button id="vBoard" onclick="setVista('board')">Por dependencia</button><button id="vLista" onclick="setVista('lista')">Todos</button></div>
+    <div id="secFiltros" class="filtros advanced"></div>
     <div id="secGrid"></div>
   </section>
-  <section>
-    <h2 class="sec">Mapa de dependencias</h2>
-    <div id="secMapa"></div>
-  </section>
+  <details class="fold"><summary>Puertas legales</summary><div id="secLegal"></div></details>
+  <details class="fold"><summary>Mapa de dependencias</summary><div id="secMapa"></div></details>
 </main>
 <footer>Real de Miramar · tablero del proyecto — datos administrados desde el Google Sheet Maestro.<div id="stamp" style="margin-top:4px;"></div></footer>
 <script src="assets/board.js"></script>
@@ -40,7 +31,7 @@
    ============================================================ */
 var BREF=null;      /* referencia a Board para handlers globales */
 var FILTRO="todos"; /* estado del filtro del semáforo */
-var VISTA="board";  /* la fuente sigue siendo Sheets; esto solo cambia la presentación */
+var VISTA="trabajo"; /* entrada operativa; dependencias y todos quedan disponibles */
 var WIRED=false;    /* evita listeners duplicados en re-render */
 
 /* ---------- utilidades locales ---------- */
@@ -111,13 +102,13 @@ window.setFiltro=function(f){
 };
 window.setFiltroEtapa=function(id){var f="etapa:"+idSafe(id);setFiltro(FILTRO===f?"todos":f);};
 window.setVista=function(v){
-  VISTA=v==="lista"?"lista":"board";
-  var a=document.getElementById("vBoard"),b=document.getElementById("vLista");
-  if(a)a.className=VISTA==="board"?"on":"";if(b)b.className=VISTA==="lista"?"on":"";
-  if(BREF)pintarGrid(BREF);
+  VISTA=(v==="lista"||v==="board")?v:"trabajo";
+  ["Trabajo","Board","Lista"].forEach(function(x){var e=document.getElementById("v"+x);if(e)e.className=VISTA===x.toLowerCase()?"on":"";});
+  if(BREF){pintarFiltros(BREF);pintarGrid(BREF);}
 };
 function pintarFiltros(B){
   var cont=B.$("secFiltros");if(!cont)return;
+  if(VISTA==="trabajo"){cont.innerHTML="";return;}
   var c=B.conteos();
   var ts=B.tabla("TRAMITES");
   var nGates=0,nUrg=0;
@@ -130,10 +121,6 @@ function pintarFiltros(B){
     ["gate","🔑 gates",nGates],
     ["urgente","Urgentes",nUrg]
   ];
-  B.hitosOrd().forEach(function(h){
-    var n=ts.filter(function(t){return String(t.paquete_etapa||"")===String(h.hito_id||"");}).length;
-    if(n>0)chips.push(["etapa:"+idSafe(h.hito_id),String(h.nombre||h.hito_id),n]);
-  });
   cont.innerHTML=chips.map(function(ch){
     return '<span class="chip'+(FILTRO===ch[0]?" on":"")+'" onclick="setFiltro(\''+ch[0].replace(/'/g,"")+'\')">'+
       B.esc(ch[1])+' · '+ch[2]+'</span>';
@@ -173,6 +160,19 @@ function pintarGrid(B){
       '<div class="meta">'+B.esc(t.tramite_id||"")+(t.fecha_inicio_est?' · '+B.esc(B.fmtFecha(t.fecha_inicio_est)):'')+'</div>'+
       (docs?'<div class="doccount">📄 '+docs+' documento'+(docs===1?'':'s')+'</div>':'')+'</div>';
   }
+  if(VISTA==="trabajo"){
+    var hid=FILTRO.indexOf("etapa:")===0?FILTRO.slice(6):String((B.etapaActual().cur||{}).hito_id||"");
+    var etapa=ts.filter(function(t){return idSafe(t.paquete_etapa)===hid;});
+    var by={};ts.forEach(function(t){by[String(t.tramite_id||"").trim()]=t;});
+    var lanes={listo:[],proceso:[],bloqueado:[],terminado:[]};
+    etapa.forEach(function(t){var cl=B.clase(t.estado);if(cl==="verde"){lanes.terminado.push(t);return;}var deps=String(t.depende_de||"").split(",").map(function(x){return x.trim();}).filter(Boolean);var blocked=deps.some(function(id){return !by[id]||B.clase(by[id].estado)!=="verde";});if(blocked){lanes.bloqueado.push(t);return;}lanes[cl==="amar"?"proceso":"listo"].push(t);});
+    pintarResumen(B,hid,etapa,lanes);
+    function workCard(t,key){var flags=(esSi(t.gate)?' 🔑':'')+(esSi(t.urgente)?' ⚠':'')+(B.docsDeTramite(t.tramite_id).length?' 📄':'');var pending=String(t.depende_de||"").split(",").map(function(x){return x.trim();}).filter(function(id){return !by[id]||B.clase(by[id].estado)!=="verde";});return '<div class="workcard" role="button" tabindex="0" onclick="abrirFicha(\''+idSafe(t.tramite_id)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();abrirFicha(\''+idSafe(t.tramite_id)+'\')}"><div class="workcardtop"><span>'+B.esc(t.tramite_id)+'</span><span>'+flags+'</span></div><h4>'+B.esc(t.nombre)+'</h4><div class="meta">'+B.esc(t.dependencia||t.autoridad||"—")+'</div><div class="meta">'+B.esc(t.responsable_nombre||"Sin responsable")+(t.fecha_compromiso?' · '+B.esc(B.fmtFecha(t.fecha_compromiso)):(t.fecha_inicio_est?' · '+B.esc(B.fmtFecha(t.fecha_inicio_est)):''))+'</div>'+(key==="bloqueado"?'<div class="blockedby">Espera: '+B.esc(pending.join(", ")||"decisión externa")+'</div>':'')+'</div>';}
+    function lane(key,title,icon){var xs=lanes[key];return '<section class="worklane '+key+'"><h3>'+icon+' '+title+' <span>'+xs.length+'</span></h3><div class="workcards">'+(xs.length?xs.map(function(t){return workCard(t,key);}).join(""):'<div class="nota empty">Sin trámites aquí.</div>')+'</div></section>';}
+    cont.innerHTML='<div class="workview">'+lane("listo","Listos ahora","▶")+lane("proceso","En proceso","◐")+lane("bloqueado","Bloqueados","🔒")+'<details class="donefold"><summary>Terminados ('+lanes.terminado.length+')</summary>'+lane("terminado","Terminados","✓")+'</details></div>';
+    return;
+  }
+  B.$("secResumen").innerHTML="";
   if(VISTA==="lista"){cont.innerHTML='<div class="tgrid">'+vis.map(function(t){return tarjeta(t,false);}).join("")+'</div>';return;}
   var grupos={},orden=[];
   vis.forEach(function(t){var d=String(t.dependencia||t.autoridad||"Sin dependencia").trim()||"Sin dependencia";if(!grupos[d]){grupos[d]=[];orden.push(d);}grupos[d].push(t);});
@@ -180,6 +180,11 @@ function pintarGrid(B){
     var xs=grupos[d],pend=xs.filter(function(t){return B.clase(t.estado)!=="verde";}).length;
     return '<section class="kcol"><header class="khead"><h3>'+B.esc(d)+'</h3><span>'+xs.length+' · '+pend+' pendientes</span></header><div class="kbody">'+xs.map(function(t){return tarjeta(t,true);}).join("")+'</div></section>';
   }).join("")+'</div>';
+}
+
+function pintarResumen(B,hid,etapa,lanes){
+  var cont=B.$("secResumen");if(!cont)return;var em=mapaEtapas(B),e=em[hid],name=e?e.h.nombre:hid;
+  cont.innerHTML='<div class="workhero"><div><span class="eyebrow">Trabajo de etapa</span><h1>'+B.esc(name||"Proyecto")+'</h1><p>'+lanes.terminado.length+' de '+etapa.length+' terminados</p></div><div class="workstats"><b>'+lanes.listo.length+'<small>listos</small></b><b>'+lanes.proceso.length+'<small>en proceso</small></b><b>'+lanes.bloqueado.length+'<small>bloqueados</small></b></div></div>';
 }
 
 /* ---------- 4. FICHA CANÓNICA ---------- */
@@ -378,7 +383,6 @@ window.renderPage=function(B){
   BREF=B;
   pintarEtapas(B);
   pintarLegal(B);
-  pintarAtacables(B);
   pintarFiltros(B);
   pintarGrid(B);
   pintarMapa(B);
