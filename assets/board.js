@@ -101,14 +101,16 @@ function pedirFin(cb){
 }
 
 /* ---------- nav común (inyectada: cero drift entre páginas) ---------- */
-var NAVS=[["index.html","Inicio",""],["tramites.html","Trámites",""],["cuentas.html","Cuentas","lock"],["evidencia.html","Evidencia",""],["direccion.html","Dirección","lock"]];
 function pintarNav(){
   var el=$("nav");if(!el)return;
-  var tabs=NAVS.map(function(n){
-    var on=(PAGE===n[0].replace(".html",""));
-    var lock=n[2]?'<span class="lk">🔒</span> ':"";
-    return '<a class="tab'+(on?" on":"")+'" href="'+n[0]+'">'+lock+n[1]+"</a>";
-  }).join("");
+  var masOn=/^(cuentas|evidencia|direccion)$/.test(PAGE);
+  var tabs='<a class="tab'+(PAGE==="index"?" on":"")+'" href="index.html">Inicio</a>'+
+    '<a class="tab'+(PAGE==="tramites"?" on":"")+'" href="tramites.html">Trabajo</a>'+
+    '<details class="navmore"><summary class="tab'+(masOn?" on":"")+'">Más</summary><div class="navmenu">'+
+      '<a href="cuentas.html"><b>Cuentas <span>🔒</span></b><small>Presupuesto, pagos y costos</small></a>'+
+      '<a href="evidencia.html"><b>Evidencia</b><small>Documentos, videos y bitácora</small></a>'+
+      '<a href="direccion.html"><b>Dirección <span>🔒</span></b><small>Decisiones y control interno</small></a>'+
+    '</div></details>';
   el.innerHTML='<header><div class="logo"><a href="index.html" style="text-decoration:none;color:inherit;"><span class="t serif">Real de Miramar</span></a>'+
     '<span class="sub">'+esc(OPTS.sub||"tablero del proyecto")+'</span></div>'+
     '<div class="hbtns"><nav class="tabs">'+tabs+"</nav>"+
