@@ -31,7 +31,7 @@ function unlocked(){try{if(sessionStorage.getItem("RM_PORTERO")==="ok")return tr
    sesión compartido, se valida contra su /exec y abre la vista sin pedir clave. */
 function porteroIntento(cb){var t=null;try{t=localStorage.getItem("pyod_clave_v1");}catch(e){}
   if(!t||String(t).indexOf("sy")!==0){cb(false);return;}
-  try{fetch("https://script.google.com/macros/s/AKfycbzCoMIKfgiKELs0efVYE0q20UfPXif-6rvfjZlCPgVuTTIljFqsMrUa9uE_4E18QHgB/exec?recurso=canje&t="+encodeURIComponent(t))
+  try{fetch("https://script.google.com/macros/s/AKfycbzCoMIKfgiKELs0efVYE0q20UfPXif-6rvfjZlCPgVuTTIljFqsMrUa9uE_4E18QHgB/exec?recurso=canje&board=RM&t="+encodeURIComponent(t))
     .then(function(r){return r.json();})
     .then(function(d){if(d&&d.ok){try{sessionStorage.setItem("RM_PORTERO","ok");}catch(e){}cb(true);}else cb(false);})
     .catch(function(){cb(false);});}catch(e){cb(false);}}
