@@ -262,8 +262,12 @@ footer{max-width:1040px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra)
 .gbar.inferido{opacity:.6;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.3) 0 4px,transparent 4px 8px);}
 svg.garrows{position:absolute;top:0;pointer-events:none;z-index:3;}
 svg.garrows path{fill:none;stroke:var(--oroc);stroke-width:1.3;}
+svg.garrows marker path{fill:var(--oroc);stroke:var(--oroc)}
 .ghoyl{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--negro);z-index:2;}
 .ghoyl span{position:absolute;top:2px;left:3px;font-size:8.5px;color:#0a0a0c;background:var(--negro);border-radius:6px;padding:0 5px;}
+.routehero{background:linear-gradient(135deg,#17181d,#201b15);border:1px solid rgba(201,169,110,.32);border-radius:15px;padding:18px 22px;margin:8px 0}.routehero>span{font-size:11px;letter-spacing:1.6px;color:var(--oro)}.routehero h1{font-family:'Instrument Serif',Georgia,serif;font-size:29px;font-weight:400;margin:3px 0}.routehero p{font-size:12px;color:var(--carbon);margin:0}.routelegend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--carbon);margin:5px 0 9px}.routelegend span{display:flex;align-items:center;gap:5px}.lg{width:14px;height:7px;border-radius:3px;background:var(--piedra)}.lg.done{background:var(--verde)}.lg.doing{background:var(--amar)}.lg.missing{background:var(--rojo)}.lg.estimate{background:repeating-linear-gradient(45deg,var(--piedra) 0 3px,transparent 3px 6px);border:1px solid var(--piedra)}.routeg{max-height:68vh}.routeg .gcanvas{min-height:220px}.routeg .grow .gl{font-size:12px}.routeg .rname{overflow:hidden;text-overflow:ellipsis}.routeg .gbar{height:17px;top:10px}.routeg .garrows{top:32px}.routehint{font-size:11px;color:var(--piedra);margin-top:7px}.routeg .grow.grp .gl{font-size:13px}.routeg .gbody{min-height:200px}
+@media(max-width:640px){.routehero{padding:14px}.routehero h1{font-size:24px}.routeg{max-height:72vh}.routelegend{gap:9px}.worktabs{overflow-x:auto}.worktabs button{flex:0 0 auto;min-width:max-content}}
+.routeg .garrows{top:0}
 
 /* ===== Modo Dueño (editor total, sheet-driven) ===== */
 .adminbar{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,#121215,#1a1a20);color:#f4f1ea;border:1px solid rgba(201,169,110,.45);border-radius:10px;padding:9px 14px;margin:10px 0 14px;font-size:12.5px;}
