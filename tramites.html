@@ -7,7 +7,7 @@
 <title>Trámites · Real de Miramar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/estilo.css?v=14">
+<link rel="stylesheet" href="assets/estilo.css?v=15">
 </head>
 <body>
 <div id="nav"></div>
@@ -32,6 +32,8 @@
 var BREF=null;      /* referencia a Board para handlers globales */
 var FILTRO="todos"; /* estado del filtro del semáforo */
 var VISTA="ruta"; /* la ruta completa explica el proyecto; acciones permite operarlo */
+var ROUTE_ZOOM="90";
+var ROUTE_CRITICA=false;
 var WIRED=false;    /* evita listeners duplicados en re-render */
 
 /* ---------- utilidades locales ---------- */
@@ -106,6 +108,8 @@ window.setVista=function(v){
   var ids={ruta:"Ruta",trabajo:"Trabajo",board:"Board",lista:"Lista"};Object.keys(ids).forEach(function(x){var e=document.getElementById("v"+ids[x]);if(e)e.className=VISTA===x?"on":"";});
   if(BREF){pintarFiltros(BREF);pintarGrid(BREF);}
 };
+window.setRouteZoom=function(v){ROUTE_ZOOM=String(v||"90");if(BREF)pintarGrid(BREF);};
+window.toggleRouteCritica=function(){ROUTE_CRITICA=!ROUTE_CRITICA;if(BREF)pintarGrid(BREF);};
 function pintarFiltros(B){
   var cont=B.$("secFiltros");if(!cont)return;
   if(VISTA==="trabajo"||VISTA==="ruta"){cont.innerHTML="";return;}
@@ -136,7 +140,8 @@ function pasaFiltro(B,t){
   return true;
 }
 function pintarGanttRuta(B,lista,cont){
-  var DAY=864e5,LW=250,RH=38,GH=30,PX=2.15,hoy=new Date();hoy.setHours(12,0,0,0);
+  if(ROUTE_CRITICA)lista=lista.filter(function(t){return String(t.ruta_critica||"").toLowerCase()!=="no";});
+  var DAY=864e5,LW=250,RH=38,GH=30,PX=ROUTE_ZOOM==="30"?5.2:(ROUTE_ZOOM==="365"?.72:(ROUTE_ZOOM==="all"?.42:2.15)),hoy=new Date();hoy.setHours(12,0,0,0);
   function fecha(s){var m=String(s||"").match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);return m?new Date(+m[1],+m[2]-1,+m[3],12):null;}
   function suma(d,w){return new Date(d.getTime()+w*7*DAY);}
   var by={},items=lista.map(function(t){var x={t:t,id:String(t.tramite_id||""),ini:fecha(t.fecha_inicio_est),fin:fecha(t.fecha_real_fin),dur:Number(t.duracion_sem)||4,inf:false,deps:[]};by[x.id]=x;return x;});
@@ -147,12 +152,14 @@ function pintarGanttRuta(B,lista,cont){
   var orden={},nombres={};B.hitosOrd().forEach(function(h,i){orden[h.hito_id]=i;nombres[h.hito_id]=h.nombre;});var grupos={};items.forEach(function(x){var g=String(x.t.paquete_etapa||"Sin etapa");(grupos[g]=grupos[g]||[]).push(x);});var gk=Object.keys(grupos).sort(function(a,b){return (orden[a]==null?99:orden[a])-(orden[b]==null?99:orden[b]);});
   var filas=[],y=0;gk.forEach(function(g){filas.push({g:g,y:y});y+=GH;grupos[g].sort(function(a,b){return a.ini-b.ini;}).forEach(function(x){x.y=y;filas.push({x:x,y:y});y+=RH;});});
   var meses="",d=new Date(min.getFullYear(),min.getMonth(),1,12),mn=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];while(d<max){meses+='<span class="mes" style="left:'+Math.max(0,X(d))+'px">'+mn[d.getMonth()]+' '+String(d.getFullYear()).slice(2)+'</span>';d=new Date(d.getFullYear(),d.getMonth()+1,1,12);}
-  var html='<div class="routelegend"><span><i class="lg done"></i>Terminado</span><span><i class="lg doing"></i>En curso</span><span><i class="lg missing"></i>Falta</span><span><i class="lg estimate"></i>Fecha estimada</span></div><div class="gwrap routeg"><div class="gcanvas" style="width:'+(LW+W)+'px"><div class="ghead"><div class="gl" style="width:'+LW+'px">TRÁMITE / ETAPA</div><div style="position:relative;width:'+W+'px">'+meses+'</div></div><div class="gbody" style="height:'+y+'px">';
+  var zooms=[["30","30 días"],["90","90 días"],["365","12 meses"],["all","Todo"]];var ctl='<div class="routectl"><div><b>Escala</b>'+zooms.map(function(z){return '<button class="'+(ROUTE_ZOOM===z[0]?'on':'')+'" onclick="setRouteZoom(\''+z[0]+'\')">'+z[1]+'</button>';}).join('')+'</div><button class="critical '+(ROUTE_CRITICA?'on':'')+'" onclick="toggleRouteCritica()">◆ Solo ruta crítica</button></div>';
+  var html=ctl+'<div class="routelegend"><span><i class="lg done"></i>Terminado</span><span><i class="lg doing"></i>En curso</span><span><i class="lg missing"></i>Falta</span><span><i class="lg estimate"></i>Fecha estimada</span></div><div class="gwrap routeg"><div class="gcanvas" style="width:'+(LW+W)+'px"><div class="ghead"><div class="gl" style="width:'+LW+'px">TRÁMITE / ETAPA</div><div style="position:relative;width:'+W+'px">'+meses+'</div></div><div class="gbody" style="height:'+y+'px">';
   filas.forEach(function(f){if(f.g!=null)html+='<div class="grow grp"><div class="gl" style="width:'+(LW+W)+'px">'+B.esc(nombres[f.g]||f.g)+' · '+grupos[f.g].length+'</div></div>';else{var x=f.x,cl=B.clase(x.t.estado),left=X(x.ini),w=Math.max(9,X(x.fin)-left);html+='<div class="grow" style="height:'+RH+'px"><div class="gl" style="width:'+LW+'px" data-id="'+B.esc(x.id)+'"><span class="tid">'+B.esc(x.id)+'</span><span class="rname">'+B.esc(x.t.nombre)+'</span></div><div class="zona" style="width:'+W+'px"><div class="gbar '+cl+(x.inf?' inferido':'')+'" data-id="'+B.esc(x.id)+'" style="left:'+left+'px;width:'+w+'px" title="'+B.esc(x.t.nombre)+'"></div></div></div>';}});
   var paths="";items.forEach(function(x){x.deps.forEach(function(id){var a=by[id],x1=X(a.fin),x2=X(x.ini),y1=a.y+RH/2,y2=x.y+RH/2,mid=x1+Math.max(12,(x2-x1)/2);paths+='<path d="M'+x1+' '+y1+' C'+mid+' '+y1+' '+(mid-4)+' '+y2+' '+(x2-3)+' '+y2+'" marker-end="url(#routeArrow)"/>';});});
   html+='<svg class="garrows" style="left:'+LW+'px;width:'+W+'px;height:'+y+'px"><defs><marker id="routeArrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0L7 3.5L0 7"/></marker></defs>'+paths+'</svg><div class="ghoyl" style="left:'+(LW+X(hoy))+'px"><span>HOY</span></div></div></div></div><div class="routehint">Toca cualquier barra o nombre para abrir su ficha. Las flechas se generan desde <b>depende_de</b> en Sheets.</div>';
   cont.innerHTML=html;Array.prototype.forEach.call(cont.querySelectorAll('[data-id]'),function(el){el.onclick=function(){abrirFicha(el.getAttribute('data-id'));};});
 }
+function calidadRuta(ts){var activos=ts.filter(function(t){return String(t.tipo||"tramite")==="tramite"&&BREF.clase(t.estado)!=="verde";}),faltas=0;activos.forEach(function(t){if(!String(t.proxima_accion||"").trim())faltas++;if(!String(t.responsable_accion||t.responsable_nombre||"").trim())faltas++;if(!String(t.fecha_revision||t.fecha_compromiso||"").trim())faltas++;});var total=Math.max(1,activos.length*3),pct=Math.max(0,Math.round((total-faltas)/total*100));return{pct:pct,faltas:faltas,activos:activos.length};}
 function pintarGrid(B){
   var cont=B.$("secGrid");if(!cont)return;
   var ts=B.tabla("TRAMITES");
@@ -160,7 +167,7 @@ function pintarGrid(B){
   var vis=ts.filter(function(t){return pasaFiltro(B,t);});
   if(!vis.length){cont.innerHTML='<div class="nota">Ningún trámite coincide con este filtro.</div>';return;}
   var em=mapaEtapas(B);
-  if(VISTA==="ruta"){B.$("secResumen").innerHTML='<div class="routehero"><span>MAPA MAESTRO</span><h1>Ruta conectada del proyecto</h1><p>Las barras muestran tiempo; las flechas, qué trámite habilita al siguiente. Las fechas rayadas son estimaciones calculadas.</p></div>';pintarGanttRuta(B,ts,cont);return;}
+  if(VISTA==="ruta"){var q=calidadRuta(ts);B.$("secResumen").innerHTML='<div class="routehero"><div><span>MAPA MAESTRO</span><h1>Ruta conectada del proyecto</h1><p>Las barras muestran tiempo; las flechas, qué trámite habilita al siguiente. Las fechas rayadas son estimaciones calculadas.</p></div><div class="quality"><b>'+q.pct+'%</b><small>calidad operativa</small><em>'+q.faltas+' datos por completar en Sheets</em></div></div>';pintarGanttRuta(B,vis,cont);return;}
   function tarjeta(t,compacta){
     var cl=B.clase(t.estado);
     var ola=String(t.ola||"").trim();
@@ -310,6 +317,8 @@ window.abrirFicha=function(id){
     h+='<div class="nota" style="margin-top:10px;">Decisión: '+B.esc(t.decision)+'</div>';
   if(String(t.notas||"").trim())
     h+='<div class="nota" style="margin-top:6px;">'+B.esc(t.notas)+'</div>';
+  var op=[['Próxima acción',t.proxima_accion],['Responsable de acción',t.responsable_accion||t.responsable_nombre],['Fecha de revisión',t.fecha_revision||t.fecha_compromiso],['Prioridad',t.prioridad],['Motivo de espera',t.motivo_espera],['Condición para desbloquear',t.condicion_desbloqueo],['Qué desbloquea',t.que_desbloquea],['Última actualización',t.ultima_actualizacion]];
+  h+='<div class="opbox"><b>Control operativo desde Sheets</b>'+op.map(function(x){return '<div><span>'+B.esc(x[0])+'</span><strong class="'+(String(x[1]||'').trim()?'':'missing')+'">'+B.esc(x[1]||'Pendiente de completar')+'</strong></div>';}).join('');var su=B.config('sheet_maestro_url');if(/^https:\/\//.test(su))h+='<a class="btn sheetedit" href="'+B.esc(su)+'#gid=832051451" target="_blank" rel="noopener">Editar registro maestro en Sheets ↗</a>';h+='</div>';
   B.modal(h);
 };
 
