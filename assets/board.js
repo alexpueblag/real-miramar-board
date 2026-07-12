@@ -26,7 +26,15 @@ function toast(m,w){var t=$("toast");if(!t)return;t.textContent=m;t.className="o
 function fmtFecha(f){if(!f)return"";var d=new Date(String(f)+"T12:00:00");if(isNaN(d))return String(f);return d.toLocaleDateString("es-MX",{day:"numeric",month:"short",year:"numeric"});}
 
 /* ---------- acceso ---------- */
-function unlocked(){try{return localStorage.getItem(UNLOCK_KEY)===CONFIG.VIEW_KEY;}catch(e){return false;}}
+function unlocked(){try{if(sessionStorage.getItem("RM_PORTERO")==="ok")return true;return localStorage.getItem(UNLOCK_KEY)===CONFIG.VIEW_KEY;}catch(e){return false;}}
+/* El Portero (potenciales-yod) es la autoridad de ligas mágicas: si hay un token de
+   sesión compartido, se valida contra su /exec y abre la vista sin pedir clave. */
+function porteroIntento(cb){var t=null;try{t=localStorage.getItem("pyod_clave_v1");}catch(e){}
+  if(!t||String(t).indexOf("sy")!==0){cb(false);return;}
+  try{fetch("https://script.google.com/macros/s/AKfycbzCoMIKfgiKELs0efVYE0q20UfPXif-6rvfjZlCPgVuTTIljFqsMrUa9uE_4E18QHgB/exec?recurso=canje&t="+encodeURIComponent(t))
+    .then(function(r){return r.json();})
+    .then(function(d){if(d&&d.ok){try{sessionStorage.setItem("RM_PORTERO","ok");}catch(e){}cb(true);}else cb(false);})
+    .catch(function(){cb(false);});}catch(e){cb(false);}}
 function lite(){return !unlocked();}
 function finGuardada(){try{return sessionStorage.getItem(FIN_KEY)||"";}catch(e){return"";}}
 
@@ -224,7 +232,7 @@ function init(opts){
   pintarNav();
   if(!$("toast"))document.body.insertAdjacentHTML("beforeend",'<div id="toast"></div>');
   var arranca=function(){cargar(function(){if(window.renderPage)window.renderPage(Board);});};
-  if(OPTS.acceso==="clave"&&!unlocked()){pedirClave(arranca);return;}
+  if(OPTS.acceso==="clave"&&!unlocked()){porteroIntento(function(ok){if(ok)arranca();else pedirClave(arranca);});return;}
   arranca();
 }
 
