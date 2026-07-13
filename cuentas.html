@@ -1,1 +1,230 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>Cuentas · acceso protegido</title><link rel="stylesheet" href="assets/estilo.css?v=secure-1"></head><body class="safe"><main class="safe-card"><span>Real de Miramar</span><h1>Cuentas protegidas</h1><p>La información financiera sólo volverá a estar disponible mediante identidad individual y autorización financiera del servidor. Esta página pública no descarga montos, pagos ni costos.</p><a href="index.html">← Volver</a></main><script src="assets/board.js?v=secure-1"></script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Cuentas · Real de Miramar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/estilo.css?v=12">
+</head>
+<body>
+<div id="nav"></div>
+<main id="app"></main>
+<footer>Real de Miramar · tablero del proyecto — datos administrados desde el Google Sheet Maestro.<div id="stamp" style="margin-top:4px;"></div></footer>
+<script src="assets/board.js?v=12"></script>
+<script>
+window.renderPage=function(B){
+  "use strict";
+  var esc=B.esc, money=B.money;
+
+  /* parser numérico único de la página */
+  function num(x){var n=Number(String(x==null?"":x).replace(/[^0-9.\-]/g,""));return isNaN(n)?0:n;}
+  /* un presupuesto cuenta como numérico solo si parsea >0 y no trae texto tipo "(avalúo, 7%...)" */
+  function esNumerico(raw){raw=String(raw==null?"":raw).trim();return raw!==""&&num(raw)>0&&!/[A-Za-z(%]/.test(raw);}
+  function corta(s,n){s=String(s==null?"":s);return s.length>n?s.slice(0,n-1)+"…":s;}
+  function esTerreno(c){return String(c.categoria||"").toLowerCase().indexOf("terreno")>=0;}
+
+  var costos=B.tabla("COSTOS"), reparto=B.tabla("REPARTO"), grav=B.tabla("GRAVAMEN_BBVA");
+  var html="";
+
+  /* ---------- 1. banda superior ---------- */
+  html+='<div class="hint">Sección interna · validada por el servidor con la clave financiera.</div>';
+
+  /* ---------- 2. KPIs ---------- */
+  var presTotal=0, pagTotal=0, especie=0, pendientes=[], filasTerreno=[];
+  costos.forEach(function(c){
+    var raw=String(c.presupuesto==null?"":c.presupuesto).trim();
+    if(esNumerico(raw)){
+      presTotal+=num(raw);
+      if(esTerreno(c))especie+=num(raw);
+    }else if(raw&&raw!=="0"){
+      pendientes.push(c);
+    }
+    var pg=num(c.pagado); if(pg>0)pagTotal+=pg;
+    if(esTerreno(c))filasTerreno.push(c);
+  });
+  var porPagar=presTotal-pagTotal-especie;
+
+  html+='<h2 class="sec">Resumen de cuentas</h2>';
+  if(!costos.length){
+    html+='<div class="nota">Sin datos de costos por ahora.</div>';
+  }else{
+    html+='<div class="kpis">'
+      +'<div class="kpi"><div class="k">Presupuesto total</div><div class="v">'+money(presTotal)+'</div></div>'
+      +'<div class="kpi"><div class="k">Pagado</div><div class="v">'+money(pagTotal)+'</div></div>'
+      +'<div class="kpi"><div class="k">En especie</div><div class="v">'+money(especie)+'</div><div class="nota">aportación del dueño · no efectivo</div></div>'
+      +'<div class="kpi"><div class="k">Por pagar</div><div class="v">'+money(porPagar>0?porPagar:0)+'</div></div>'
+      +'</div>';
+    if(pendientes.length){
+      html+='<div class="hint"><b>Pendientes de cotizar</b> (presupuesto aún sin número): '
+        +pendientes.map(function(c){return esc(c.concepto)+' <span class="nota">'+esc(String(c.presupuesto||"").trim())+'</span>';}).join(" · ")
+        +'</div>';
+    }
+  }
+
+  /* ---------- 3. Cuenta T ---------- */
+  html+='<h2 class="sec">Cuenta del proyecto</h2>';
+  var portalUrl=B.config("portal_codesarrolladores_url");
+  var portalTxt=(portalUrl&&portalUrl.indexOf("http")===0)
+    ?'<a href="'+esc(portalUrl)+'" target="_blank" rel="noopener">ver portal ↗</a>'
+    :'en el portal Co-desarrolladores';
+  var entradas="";
+  if(filasTerreno.length){
+    filasTerreno.forEach(function(c){
+      entradas+='<div>'+esc(c.concepto)+' <b>'+(esNumerico(c.presupuesto)?money(c.presupuesto):esc(String(c.presupuesto||"").trim()||"—"))+'</b> <span class="nota">en especie</span></div>';
+    });
+  }else{
+    entradas+='<div class="nota">Sin fila de terreno en COSTOS.</div>';
+  }
+  entradas+='<div>Capital de codesarrolladores → '+portalTxt+'</div>'
+    +'<div class="nota">los montos por persona viven SOLO en el portal.</div>';
+
+  var salidas='<div>Pagado total: <b>'+money(pagTotal)+'</b></div>';
+  var conPago=costos.filter(function(c){return num(c.pagado)>0;});
+  if(conPago.length){
+    conPago.forEach(function(c){
+      var extra=[];
+      if(String(c.proveedor||"").trim())extra.push(esc(c.proveedor));
+      var f=B.fmtFecha(c.fecha_pago); if(f)extra.push(esc(f));
+      salidas+='<div>· '+esc(c.concepto)+' <b>'+money(c.pagado)+'</b>'+(extra.length?' <span class="nota">'+extra.join(" · ")+'</span>':'')+'</div>';
+    });
+  }else{
+    salidas+='<div class="nota">Aún no hay pagos registrados.</div>';
+  }
+  salidas+='<div style="border-top:1px solid var(--linea);margin-top:6px;padding-top:4px;">Por ejercer: <b>'+money(porPagar>0?porPagar:0)+'</b></div>';
+
+  html+='<div class="cuentaT"><div class="grid">'
+    +'<div class="lado"><h5>Entradas</h5><div class="body">'+entradas+'</div></div>'
+    +'<div class="lado"><h5>Salidas</h5><div class="body">'+salidas+'</div></div>'
+    +'</div></div>';
+
+  /* ---------- 4. presupuesto vs pagado por categoría ---------- */
+  html+='<h2 class="sec">Presupuesto vs pagado por categoría</h2>';
+  var cats={}, catOrd=[], porCotizar=[];
+  costos.forEach(function(c){
+    if(esTerreno(c))return;
+    var k=String(c.categoria||"").trim()||"(sin categoría)";
+    if(!cats[k]){cats[k]={pres:0,pag:0};catOrd.push(k);}
+    if(esNumerico(c.presupuesto))cats[k].pres+=num(c.presupuesto);
+    else if(String(c.presupuesto||"").trim())porCotizar.push(c);
+    var pg=num(c.pagado); if(pg>0)cats[k].pag+=pg;
+  });
+  if(!catOrd.length){
+    html+='<div class="nota">Sin categorías de costos por ahora.</div>';
+  }else{
+    html+='<div class="card">';
+    catOrd.forEach(function(k){
+      var g=cats[k];
+      var pct=g.pres>0?Math.min(100,Math.round(g.pag/g.pres*100)):0;
+      html+='<div class="hbar"><span class="nom">'+esc(k)+'</span>'
+        +'<span class="pista"><i style="width:'+pct+'%;"></i></span>'
+        +'<span style="white-space:nowrap;">'+money(g.pag)+' / '+money(g.pres)+'</span></div>';
+    });
+    if(porCotizar.length){
+      html+='<div class="nota" style="margin-top:8px;">por cotizar: '
+        +porCotizar.map(function(c){return esc(c.concepto)+' ('+esc(String(c.presupuesto||"").trim())+')';}).join(" · ")+'</div>';
+    }
+    html+='</div>';
+  }
+
+  /* ---------- 5. reparto ---------- */
+  html+='<h2 class="sec">Reparto</h2>';
+  if(!reparto.length){
+    html+='<div class="nota">Sin filas de reparto por ahora.</div>';
+  }else{
+    var capas={}, capOrd=[], notasRep=[];
+    reparto.forEach(function(r){
+      if(/^nota/i.test(String(r.capa||"").trim())||/^nota/i.test(String(r.concepto||"").trim())){notasRep.push(r);return;}
+      var k=String(r.capa||"").trim()||"(sin capa)";
+      if(!capas[k]){capas[k]=[];capOrd.push(k);}
+      capas[k].push(r);
+    });
+    html+='<div class="card">';
+    capOrd.forEach(function(k,i){
+      html+='<div class="cat" style="margin:'+(i?'14px':'0')+' 0 4px;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--piedra);">'+esc(k)+'</div>';
+      capas[k].forEach(function(r){
+        html+='<div class="docrow"><span>'+esc(r.concepto)+'</span>'
+          +'<span style="white-space:nowrap;"><b>'+esc(String(r.porcentaje||"").trim()||"—")+'</b>'
+          +(String(r.base_calculo||"").trim()?' <span class="nota">sobre '+esc(r.base_calculo)+'</span>':'')+'</span></div>';
+      });
+    });
+    notasRep.forEach(function(r){
+      var t=[String(r.concepto||"").trim(),String(r.base_calculo||"").trim(),String(r.notas||"").trim()].filter(function(s){return s&&!/^nota$/i.test(s);}).join(" · ");
+      html+='<div class="hint">'+esc(t||"—")+'</div>';
+    });
+    html+='</div>';
+  }
+
+  /* ---------- 6. gravamen BBVA ---------- */
+  html+='<h2 class="sec">Gravamen BBVA</h2>';
+  if(!grav.length){
+    html+='<div class="nota">Sin filas de gravamen por ahora.</div>';
+  }else{
+    html+='<div class="card">';
+    grav.forEach(function(g){
+      var vigente=/vigente/i.test(String(g.estado||""));
+      var sup=num(g.superficie_m2);
+      html+='<div class="docrow"><span>'
+        +(vigente?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rojo);margin-right:6px;"></span>':'')
+        +'<b>'+esc(String(g.folio||"").trim()||"—")+'</b>'
+        +(String(g.subpoligono||"").trim()?' · '+esc(g.subpoligono):'')
+        +(sup>0?' · '+sup.toLocaleString("es-MX")+' m²':'')
+        +'</span><span style="text-align:right;">'+esc(String(g.estado||"").trim()||"—")
+        +(String(g.notas||"").trim()?'<br><span class="nota">'+esc(corta(g.notas,90))+'</span>':'')
+        +'</span></div>';
+    });
+    html+='</div>';
+  }
+
+  /* ---------- 7. KPI costo ↔ valor ---------- */
+  html+='<h2 class="sec">Costo ↔ valor</h2>';
+  var mia=null;
+  B.tabla("TRAMITES").forEach(function(t){
+    if(mia)return;
+    if(/MIA|ambiental/i.test(String(t.nombre||""))&&num(t.costo_estimado)>0)mia=t;
+  });
+  var ea=B.etapaActual();
+  if(mia&&ea.cur&&ea.next){
+    var pCur=num(ea.cur.precio_m2), pNext=num(ea.next.precio_m2), delta=pNext-pCur;
+    html+='<div class="hint" style="background:rgba(143,191,139,.14);color:#8FBF8B;">'
+      +'<b>'+esc(mia.nombre)+'</b> cuesta <b>'+money(mia.costo_estimado)+'</b> y es gate del paso a <b>'+esc(ea.next.nombre)+'</b>: <b>+'+money(delta)+'/m²</b>.'
+      +'<div class="nota" style="margin-top:4px;color:#8FBF8B;opacity:.8;">Fórmula: '+money(pNext)+' ('+esc(ea.next.nombre)+') − '+money(pCur)+' ('+esc(ea.cur.nombre)+') = +'+money(delta)+' por m².</div>'
+      +'</div>';
+  }else{
+    html+='<div class="nota">Falta información para el cálculo costo ↔ valor (trámite ambiental con costo o etapa siguiente).</div>';
+  }
+
+  /* ---------- 8. costos detalle ---------- */
+  html+='<h2 class="sec">Costos · detalle</h2>';
+  if(!costos.length){
+    html+='<div class="nota">Sin filas de costos por ahora.</div>';
+  }else{
+    html+='<div class="card">';
+    costos.forEach(function(c){
+      var pg=num(c.pagado);
+      var pagTxt=pg>0?money(pg):"—";
+      var extra=[];
+      var f=B.fmtFecha(c.fecha_pago); if(pg>0&&f)extra.push(esc(f));
+      if(pg>0&&String(c.proveedor||"").trim())extra.push(esc(c.proveedor));
+      html+='<div class="docrow"><span style="flex:1;min-width:180px;">'
+        +'<span class="cat">'+esc(String(c.categoria||"").trim()||"—")+'</span><br>'+esc(c.concepto)
+        +(String(c.notas||"").trim()?'<br><span class="nota">'+esc(corta(c.notas,90))+'</span>':'')
+        +'</span><span style="text-align:right;white-space:nowrap;">'
+        +'<span class="nota">presupuesto</span> '+(esNumerico(c.presupuesto)?money(c.presupuesto):esc(String(c.presupuesto||"").trim()||"—"))
+        +'<br><span class="nota">pagado</span> '+pagTxt
+        +(extra.length?' <span class="nota">'+extra.join(" · ")+'</span>':'')
+        +'</span></div>';
+    });
+    html+='</div>';
+  }
+
+  B.$("app").innerHTML=html;
+  B.$("stamp").textContent="Actualizado: "+(B.meta().actualizado?new Date(B.meta().actualizado).toLocaleString("es-MX"):"—");
+};
+Board.init({page:"cuentas",acceso:"fin",sub:"cuentas internas del proyecto"});
+</script>
+<script src="https://alexpueblag.github.io/potenciales-yod/portero.js" data-gate="suave"></script>
+</body>
+</html>
