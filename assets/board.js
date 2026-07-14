@@ -123,12 +123,12 @@ function pedirFin(cb){
 function pintarNav(){
   var el=$("nav");if(!el)return;
   var masOn=/^(cuentas|evidencia|direccion)$/.test(PAGE);
-  var tabs='<a class="tab'+(PAGE==="index"?" on":"")+'" href="index.html">Inicio</a>'+
-    '<a class="tab'+(PAGE==="tramites"?" on":"")+'" href="tramites.html">Trabajo</a>'+
-    '<details class="navmore"><summary class="tab'+(masOn?" on":"")+'">Más</summary><div class="navmenu">'+
-      '<a href="cuentas.html"><b>Cuentas <span>🔒</span></b><small>Presupuesto, pagos y costos</small></a>'+
-      '<a href="evidencia.html"><b>Evidencia</b><small>Documentos, videos y bitácora</small></a>'+
-      '<a href="direccion.html"><b>Dirección <span>🔒</span></b><small>Decisiones y control interno</small></a>'+
+  var tabs='<a class="tab'+(PAGE==="index"?" on":"")+'" href="index.html"><i class="ti ti-home-2"></i>Inicio</a>'+
+    '<a class="tab'+(PAGE==="tramites"?" on":"")+'" href="tramites.html"><i class="ti ti-checklist"></i>Trabajo</a>'+
+    '<details class="navmore"><summary class="tab'+(masOn?" on":"")+'"><i class="ti ti-dots"></i>Más</summary><div class="navmenu">'+
+      '<a href="cuentas.html"><b><i class="ti ti-wallet"></i> Cuentas <i class="ti ti-lock"></i></b><small>Presupuesto, pagos y costos</small></a>'+
+      '<a href="evidencia.html"><b><i class="ti ti-photo"></i> Evidencia</b><small>Documentos, videos y bitácora</small></a>'+
+      '<a href="direccion.html"><b><i class="ti ti-compass"></i> Dirección <i class="ti ti-lock"></i></b><small>Decisiones y control interno</small></a>'+
     '</div></details>';
   el.innerHTML='<header><div class="logo"><a href="index.html" style="text-decoration:none;color:inherit;"><span class="t serif">Real de Miramar</span></a>'+
     '<span class="sub">'+esc(OPTS.sub||"tablero del proyecto")+'</span></div>'+

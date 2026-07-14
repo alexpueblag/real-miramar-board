@@ -21,8 +21,10 @@ h2.sec{font-family:'Instrument Serif',Georgia,serif;font-weight:normal;font-size
 .muted,.nota{color:var(--piedra);}
 .nota{font-size:12px;}
 .hint{background:var(--arena);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--carbon);margin-top:8px;}
-.btn{border:0;background:var(--negro);color:#17140F;border-radius:8px;padding:9px 16px;font-family:inherit;font-size:13px;cursor:pointer;letter-spacing:.3px;}
+.btn{border:0;background:var(--negro);color:#17140F;border-radius:9px;padding:9px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.3px;}
+.btn:hover{filter:brightness(.94);}
 .btn.ghost{background:transparent;color:var(--negro);border:1px solid var(--linea);}
+.btn.ghost:hover{border-color:var(--oro);filter:none;}
 
 /* ---------- nav común ---------- */
 header{background:#1C1811;border-bottom:1px solid var(--linea);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
@@ -31,8 +33,9 @@ header{background:#1C1811;border-bottom:1px solid var(--linea);padding:10px 18px
 .logo .sub{color:var(--piedra);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;border-left:1px solid var(--linea);padding-left:10px;}
 .hbtns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;}
-.tab{text-decoration:none;color:var(--carbon);border:1px solid var(--linea);border-radius:16px;padding:5px 13px;font-size:12px;background:transparent;}
-.tab.on{background:var(--negro);color:#17140F;border-color:var(--negro);}
+.tab{text-decoration:none;color:var(--carbon);border:1px solid var(--linea);border-radius:16px;padding:5px 13px;font-size:12px;background:transparent;display:inline-flex;align-items:center;gap:7px;}
+.tab:hover{background:rgba(255,255,255,.07);}
+.tab.on{background:rgba(154,123,63,.2);color:#ead8b5;border-color:transparent;}
 .tab .lk{font-size:10px;}
 #badge{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--carbon);border:1px solid var(--linea);border-radius:20px;padding:5px 11px;cursor:pointer;background:transparent;}
 #badge .dot{width:8px;height:8px;border-radius:50%;background:var(--piedra);}
@@ -44,7 +47,8 @@ header{background:#1C1811;border-bottom:1px solid var(--linea);padding:10px 18px
 /* ---------- gate ---------- */
 #gate{position:fixed;inset:0;background:var(--crema);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
 #gate .box{background:#221E17;border:1px solid var(--linea);border-radius:14px;padding:30px 28px;max-width:360px;width:100%;text-align:center;}
-#gate input{border:1px solid var(--linea);border-radius:8px;padding:10px 12px;font-size:14px;width:100%;font-family:inherit;margin:12px 0;background:#17140F;color:var(--negro);}
+#gate input{border:1px solid var(--linea);border-radius:9px;padding:10px 12px;font-size:14px;width:100%;font-family:inherit;margin:12px 0;background:#17140F;color:var(--negro);}
+#gate input:focus,.modal input:focus,.modal textarea:focus,#idrw input:focus,#idrw select:focus,#idrw textarea:focus{outline:none;border-color:var(--oro);box-shadow:0 0 0 2px rgba(185,139,60,.25);}
 
 /* ---------- el camino (hub) ---------- */
 .camino{display:flex;align-items:flex-end;gap:5px;overflow-x:auto;padding:22px 2px 4px;}
@@ -60,8 +64,8 @@ header{background:#1C1811;border-bottom:1px solid var(--linea);padding:10px 18px
 .gaterow .gbar{flex:1;min-width:200px;}
 .progress{height:8px;background:var(--arena);border-radius:6px;overflow:hidden;margin-top:5px;}
 .progress > i{display:block;height:100%;background:var(--verde);}
-.chip{display:inline-block;border:1px solid var(--linea);background:transparent;border-radius:16px;padding:5px 12px;font-size:11.5px;color:var(--carbon);cursor:pointer;text-decoration:none;}
-.chip.on{background:var(--negro);color:#17140F;border-color:var(--negro);}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--linea);background:transparent;border-radius:16px;padding:5px 12px;font-size:11.5px;color:var(--carbon);cursor:pointer;text-decoration:none;}
+.chip.on{background:rgba(154,123,63,.2);color:#ead8b5;border-color:transparent;}
 .gatebanner{border-radius:8px;padding:12px 16px;margin:10px 0 0;font-size:13px;border-left:5px solid var(--rojo);background:#221E17;color:var(--negro);}
 .gatebanner.ok{border-left-color:var(--verde);}
 
@@ -148,7 +152,7 @@ header{background:#1C1811;border-bottom:1px solid var(--linea);padding:10px 18px
 .modal{background:#221E17;border-radius:12px;max-width:520px;width:100%;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
 .modal h3{margin:0 0 4px;font-family:'Instrument Serif',Georgia,serif;font-weight:normal;font-size:20px;}
 .modal .x{float:right;cursor:pointer;color:var(--piedra);font-size:20px;line-height:1;}
-.modal input,.modal textarea{width:100%;margin-top:8px;border:1px solid var(--linea);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:13px;background:#17140F;color:var(--negro);}
+.modal input,.modal textarea{width:100%;margin-top:8px;border:1px solid var(--linea);border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;background:#17140F;color:var(--negro);}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--negro);color:#17140F;padding:10px 18px;border-radius:24px;font-size:13px;opacity:0;transition:opacity .25s;z-index:300;pointer-events:none;}
 #toast.on{opacity:1;}
 #toast.warn{background:var(--rojo);}
@@ -196,9 +200,9 @@ footer{max-width:1040px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra)
 .ichips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
 .ilchip{border:1px solid var(--linea);background:transparent;border-radius:20px;padding:7px 13px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--negro);display:inline-flex;align-items:center;gap:6px;}
 .ilchip:hover{border-color:var(--oroc);}
-.ilchip.on{background:var(--negro);color:#17140F;border-color:var(--negro);}
+.ilchip.on{background:rgba(154,123,63,.2);color:#ead8b5;border-color:transparent;}
 .ilchip .cnt{font-size:10.5px;background:var(--linea);color:var(--carbon);border-radius:10px;padding:1px 6px;}
-.ilchip.on .cnt{background:rgba(201,169,110,.35);color:#17140F;}
+.ilchip.on .cnt{background:rgba(201,169,110,.35);color:#ead8b5;}
 .ifhead{font-size:12.5px;color:var(--carbon);margin-bottom:10px;}
 .ifhead b{color:var(--negro);font-weight:600;}
 .ifrow{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;border-top:1px solid var(--linea);cursor:pointer;border-radius:7px;}
@@ -227,7 +231,7 @@ footer{max-width:1040px;margin:0 auto;padding:20px 18px 50px;color:var(--piedra)
 .idch{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;}
 .idcp{font-size:11.5px;border:1px solid var(--linea);background:transparent;border-radius:12px;padding:4px 10px;cursor:pointer;color:var(--carbon);}
 .idcp:hover{border-color:var(--oro);color:var(--oro);}
-#idrw input,#idrw select,#idrw textarea{width:100%;font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--linea);border-radius:8px;margin-top:4px;background:#17140F;color:var(--negro);}
+#idrw input,#idrw select,#idrw textarea{width:100%;font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--linea);border-radius:9px;margin-top:4px;background:#17140F;color:var(--negro);}
 #idrw textarea{min-height:58px;resize:vertical;}
 .idsave{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
 .idsave .btn{text-decoration:none;}
@@ -258,7 +262,7 @@ svg.garrows path{fill:none;stroke:var(--oroc);stroke-width:1.3;}
 /* ===== Modo Dueño (editor total, sheet-driven) ===== */
 .adminbar{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,#1C1811,#1a1a20);color:#F1EDE3;border:1px solid rgba(201,169,110,.45);border-radius:10px;padding:9px 14px;margin:10px 0 14px;font-size:12.5px;}
 .adminbar .sp{flex:1;}
-.adminbar button{background:rgba(201,169,110,.16);color:#D8AE5E;border:1px solid rgba(201,169,110,.5);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;}
+.adminbar button{background:rgba(201,169,110,.16);color:#D8AE5E;border:1px solid rgba(201,169,110,.5);border-radius:9px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
 .adminbar button:hover{background:rgba(201,169,110,.3);}
 .adminbar button.out{background:transparent;border-color:rgba(244,241,234,.25);color:rgba(244,241,234,.7);}
 .ilchip.adm{opacity:.55;}
@@ -285,7 +289,7 @@ svg.garrows path{fill:none;stroke:var(--oroc);stroke-width:1.3;}
 .navmenu a{text-decoration:none;color:var(--carbon);font-size:12px;padding:9px 11px;border-radius:9px}
 .navmenu a:hover{background:var(--crema)}
 .viewtoggle{display:inline-flex;flex-wrap:wrap;gap:6px;background:var(--arena);border:1px solid var(--linea);border-radius:14px;padding:4px}
-.viewtoggle button{border:0;background:transparent;color:var(--carbon);font:inherit;font-size:12px;font-weight:700;padding:6px 12px;border-radius:10px;cursor:pointer}
+.viewtoggle button{border:0;background:transparent;color:var(--carbon);font:inherit;font-size:12px;font-weight:700;padding:6px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .viewtoggle button.on{background:var(--oro);color:#17140F}
 .techlegend{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0}
 .techlegend .techintro{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--piedra);margin-right:4px}

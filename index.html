@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/estilo.css?v=19">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
 </head>
 <body>
 <div id="nav"></div>
@@ -28,7 +29,7 @@ window.renderPage=function(B){
   costos.forEach(function(c){presup+=num(c.presupuesto);pag+=num(c.pagado);});
 
   var h="";
-  if(adminKey())h+='<div class="adminbar">👑 <b>Modo Dueño</b> · crea, archiva y edita el sistema — todo se guarda en el Sheet<span class="sp"></span><button onclick="nuevoTramite()">＋ Trámite</button><button onclick="editorPlantilla()">🎨 Plantilla</button><button class="out" onclick="salirAdmin()">salir</button></div>';
+  if(adminKey())h+='<div class="adminbar">👑 <b>Modo Dueño</b> · crea, archiva y edita el sistema — todo se guarda en el Sheet<span class="sp"></span><button onclick="nuevoTramite()"><i class="ti ti-plus"></i> Trámite</button><button onclick="editorPlantilla()"><i class="ti ti-palette"></i> Plantilla</button><button class="out" onclick="salirAdmin()"><i class="ti ti-logout"></i> salir</button></div>';
   h+='<div class="ihero"><div class="row"><img src="'+LOGO+'" alt="YoDesarrollo"><span class="cotag">co-desarrollo</span></div>';
   h+='<h1>Real de Miramar</h1><div class="sub">Privada residencial · Guaymas, Sonora · un sistema de YoDesarrollo</div></div>';
   h+='<div class="idonde"><div class="lbl">¿Dónde estamos?</div><div class="grid3">';
@@ -75,14 +76,14 @@ window.renderPage=function(B){
   function depsListas(t){var ds=String(t.depende_de||"").split(/[,;\s]+/).filter(Boolean);return ds.length===0||ds.every(function(id){return EST[id]==="verde";});}
   var cur=hitos[curi]?hitos[curi].hito_id:"";
   var LENTES=[
-    {k:'urgente',t:'🔥 Urgente',f:function(t){return /^si/i.test(String(t.urgente))&&B.clase(t.estado)!=='verde';}},
-    {k:'atacable',t:'⚡ Atacable ahora',f:function(t){return B.clase(t.estado)!=='verde'&&depsListas(t);}},
-    {k:'critica',t:'◆ Ruta crítica',f:function(t){var rc=String(t.ruta_critica||'').toLowerCase();return rc&&rc!=='no'&&B.clase(t.estado)!=='verde';}},
-    {k:'banco',t:'🏦 Banco',f:function(t){return String(t.ruta_critica||'').toLowerCase()==='banco';}},
-    {k:'fisica',t:'🏗 Física / obra',f:function(t){return String(t.ruta_critica||'').toLowerCase()==='fisica';}},
-    {k:'etapa',t:'📍 Etapa actual',f:function(t){return String(t.paquete_etapa||'')===cur&&B.clase(t.estado)!=='verde';}},
-    {k:'resp',t:'👤 Por responsable',f:function(t){return B.clase(t.estado)!=='verde';},grupo:true,campo:'responsable_nombre',sinLabel:'Sin responsable'},
-    {k:'dep',t:'🏛️ Por dependencia',f:function(t){return true;},grupo:true,campo:'dependencia',sinLabel:'Sin dependencia asignada'},
+    {k:'urgente',t:'<i class="ti ti-flame"></i> Urgente',f:function(t){return /^si/i.test(String(t.urgente))&&B.clase(t.estado)!=='verde';}},
+    {k:'atacable',t:'<i class="ti ti-bolt"></i> Atacable ahora',f:function(t){return B.clase(t.estado)!=='verde'&&depsListas(t);}},
+    {k:'critica',t:'<i class="ti ti-diamond"></i> Ruta crítica',f:function(t){var rc=String(t.ruta_critica||'').toLowerCase();return rc&&rc!=='no'&&B.clase(t.estado)!=='verde';}},
+    {k:'banco',t:'<i class="ti ti-building-bank"></i> Banco',f:function(t){return String(t.ruta_critica||'').toLowerCase()==='banco';}},
+    {k:'fisica',t:'<i class="ti ti-tools"></i> Física / obra',f:function(t){return String(t.ruta_critica||'').toLowerCase()==='fisica';}},
+    {k:'etapa',t:'<i class="ti ti-map-pin"></i> Etapa actual',f:function(t){return String(t.paquete_etapa||'')===cur&&B.clase(t.estado)!=='verde';}},
+    {k:'resp',t:'<i class="ti ti-user"></i> Por responsable',f:function(t){return B.clase(t.estado)!=='verde';},grupo:true,campo:'responsable_nombre',sinLabel:'Sin responsable'},
+    {k:'dep',t:'<i class="ti ti-building-community"></i> Por dependencia',f:function(t){return true;},grupo:true,campo:'dependencia',sinLabel:'Sin dependencia asignada'},
     {k:'falta',t:'Todo lo que falta',f:function(t){return B.clase(t.estado)!=='verde';}},
     {k:'todo',t:'Todo',f:function(t){return true;}}
   ];
@@ -100,7 +101,7 @@ window.renderPage=function(B){
   var SEL='urgente';
   function chips(){
     var hh=LENTES.map(function(l){var n=tr.filter(l.f).length;return '<button class="ilchip'+(l.k===SEL?' on':'')+'" data-k="'+l.k+'">'+l.t+' <span class="cnt">'+n+'</span></button>';}).join("");
-    if(!adminKey())hh+='<button class="ilchip adm" id="ichadm" title="Modo Dueño">⚙</button>';
+    if(!adminKey())hh+='<button class="ilchip adm" id="ichadm" title="Modo Dueño"><i class="ti ti-settings"></i></button>';
     B.$("ichips").innerHTML=hh;
     Array.prototype.forEach.call(document.querySelectorAll('.ilchip[data-k]'),function(el){el.onclick=function(){SEL=el.getAttribute('data-k');chips();foco();};});
     var ia=B.$("ichadm");if(ia)ia.onclick=function(){entrarAdmin();};

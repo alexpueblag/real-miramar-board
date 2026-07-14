@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/estilo.css?v=19">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
 </head>
 <body>
 <div id="nav"></div>
@@ -15,7 +16,7 @@
   <section>
     <div id="secResumen"></div>
     <div id="secEtapas"></div>
-    <div class="viewtoggle worktabs" role="group" aria-label="Vista"><button id="vRuta" class="on" onclick="setVista('ruta')">Ruta conectada</button><button id="vTrabajo" onclick="setVista('trabajo')">Acciones</button><button id="vBoard" onclick="setVista('board')">Dependencias</button><button id="vLista" onclick="setVista('lista')">Todos</button></div>
+    <div class="viewtoggle worktabs" role="group" aria-label="Vista"><button id="vRuta" class="on" onclick="setVista('ruta')"><i class="ti ti-route"></i> Ruta conectada</button><button id="vTrabajo" onclick="setVista('trabajo')"><i class="ti ti-list-check"></i> Acciones</button><button id="vBoard" onclick="setVista('board')"><i class="ti ti-sitemap"></i> Dependencias</button><button id="vLista" onclick="setVista('lista')"><i class="ti ti-layout-grid"></i> Todos</button></div>
     <div id="secFiltros" class="filtros advanced"></div>
     <div id="secGrid"></div>
   </section>
@@ -119,15 +120,15 @@ function pintarFiltros(B){
   ts.forEach(function(t){if(esSi(t.gate))nGates++;if(esSi(t.urgente))nUrg++;});
   var chips=[
     ["todos","Todos",c.total],
-    ["verde","Hechos",c.verde],
-    ["amar","En proceso",c.amar],
+    ["verde","Hechos",c.verde,"ti-circle-check"],
+    ["amar","En proceso",c.amar,"ti-clock"],
     ["rojo","Faltan",c.rojo],
-    ["gate","🔑 gates",nGates],
+    ["gate","gates",nGates,"ti-lock"],
     ["urgente","Urgentes",nUrg]
   ];
   cont.innerHTML=chips.map(function(ch){
     return '<span class="chip'+(FILTRO===ch[0]?" on":"")+'" onclick="setFiltro(\''+ch[0].replace(/'/g,"")+'\')">'+
-      B.esc(ch[1])+' · '+ch[2]+'</span>';
+      (ch[3]?'<i class="ti '+ch[3]+'"></i> ':'')+B.esc(ch[1])+' · '+ch[2]+'</span>';
   }).join("");
 }
 function pasaFiltro(B,t){
