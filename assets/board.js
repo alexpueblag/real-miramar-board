@@ -37,16 +37,24 @@ function porteroIntento(cb){var t=null;try{t=localStorage.getItem("pyod_clave_v1
     .catch(function(){cb(false);});}catch(e){cb(false);}}
 function lite(){return !unlocked();}
 function finGuardada(){try{return sessionStorage.getItem(FIN_KEY)||"";}catch(e){return"";}}
+/* Credencial del Portero (misma llave que portero.js): viaja como k en CADA petición.
+   El backend la valida server-to-server; sin ella no entrega ni un dato (fail-closed). */
+function credencial(){try{return localStorage.getItem("pyod_clave_v1")||"";}catch(e){return"";}}
+function credencialRechazada(){try{localStorage.removeItem("pyod_clave_v1");localStorage.removeItem(CACHE_KEY);sessionStorage.removeItem("RM_PORTERO");sessionStorage.removeItem("pyod_rol");}catch(e){}location.reload();}
 
 /* ---------- fetch único con caché TTL ---------- */
 function leerCache(){try{var c=JSON.parse(localStorage.getItem(CACHE_KEY));if(c&&c.j&&c.j.tablas)return c;}catch(e){}return null;}
 function guardarCache(j){try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),j:j}));}catch(e){}}
 function fetchBoard(fin,cb){
+  /* Sin credencial del Portero no se pide nada: el gate del Portero (portero.js)
+     está cubriendo la pantalla para iniciar sesión. Evita el bucle de recarga. */
+  if(!credencial()){setBadge("error","Inicia sesión");if(cb)cb(new Error("sin_credencial"));return;}
   setBadge("loading","Cargando");
-  var url=CONFIG.SHEET_URL+"?recurso=board"+(fin?("&fin="+encodeURIComponent(fin)):"")+"&cb="+Date.now();
+  var url=CONFIG.SHEET_URL+"?recurso=board&k="+encodeURIComponent(credencial())+(fin?("&fin="+encodeURIComponent(fin)):"")+"&cb="+Date.now();
   var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort();},FETCH_TIMEOUT);
   fetch(url,{signal:ctrl.signal}).then(function(r){return r.json();}).then(function(j){
     clearTimeout(to);
+    if(j&&j.error==="liga"){credencialRechazada();return;}   /* credencial inválida → limpiar y volver a pedir acceso */
     if(j&&j.tablas){if(!fin)guardarCache(j);cb(null,j);}
     else cb(new Error("respuesta sin tablas"));
   }).catch(function(e){clearTimeout(to);cb(e);});
@@ -65,10 +73,10 @@ function cargar(cb){
      el hero de Inicio); si no, la vista pública normal. */
   var fk=finGuardada();
   var c=leerCache();
-  if(!fk&&c&&(Date.now()-c.t)<TTL){DATA=c.j;setBadge("live","En vivo");cb();return;}
+  if(credencial()&&!fk&&c&&(Date.now()-c.t)<TTL){DATA=c.j;setBadge("live","En vivo");cb();return;}   /* caché solo con credencial */
   fetchBoard(fk||null,function(err,j){
     if(!err){if(fk&&j.meta&&j.meta.incluye_financiero)FIN=fk;DATA=j;setBadge("live",FIN?"En vivo · interno":"En vivo");cb();}
-    else if(c){DATA=c.j;setBadge("cache","Copia guardada");cb();}
+    else if(credencial()&&c){DATA=c.j;setBadge("cache","Copia guardada");cb();}   /* caché solo con credencial */
     else{setBadge("error","Sin datos");var a=$("app");if(a)a.insertAdjacentHTML("afterbegin",'<div class="gatebanner">No se pudo cargar el tablero. Revisa la conexión.</div>');}
   });
 }
@@ -210,9 +218,10 @@ function tramitePor(id){var t=null;tabla("TRAMITES").forEach(function(x){if(Stri
 /* ---------- escritura (solo dirección) ---------- */
 function post(payload,cb){
   payload.request_id=payload.request_id||("web-"+Date.now());
+  payload.k=credencial();   /* toda escritura viaja con la credencial del Portero; el servidor la valida */
   fetch(CONFIG.SHEET_URL,{method:"POST",body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
-    .then(function(j){cb(null,j);}).catch(function(e){cb(e);});
+    .then(function(j){if(j&&j.error==="liga"){credencialRechazada();return;}cb(null,j);}).catch(function(e){cb(e);});
 }
 
 /* ---------- modal ---------- */
