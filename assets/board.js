@@ -223,8 +223,19 @@ function post(payload,cb){
   payload.request_id=payload.request_id||("web-"+Date.now());
   payload.k=credencial();   /* toda escritura viaja con la credencial del Portero; el servidor la valida */
   fetch(CONFIG.SHEET_URL,{method:"POST",body:JSON.stringify(payload),credentials:'omit'})
-    .then(function(r){return r.json();})
-    .then(function(j){if(j&&j.error==="liga"){credencialRechazada();return;}cb(null,j);}).catch(function(e){cb(e);});
+    .then(function(r){return r.text().then(function(t){return {s:r.status,t:t};});})
+    .then(function(o){
+      var j;
+      try{ j=JSON.parse(o.t); }
+      catch(_){
+        /* respuesta no-JSON: sesión caducada o error del servidor, no un token críptico */
+        cb(new Error(/sign in|accounts\.google/i.test(o.t)?"Tu sesión de Google caducó — recarga la página y vuelve a entrar.":(o.s>=400?("El servidor respondió con error "+o.s+"."):"Respuesta inesperada del servidor.")));
+        return;
+      }
+      if(j&&j.error==="liga"){credencialRechazada();return;}
+      cb(null,j);
+    })
+    .catch(function(){cb(new Error("Sin conexión con el servidor. Revisa tu internet e intenta de nuevo."));});
 }
 
 /* ---------- modal ---------- */
