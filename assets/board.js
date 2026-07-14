@@ -31,7 +31,7 @@ function unlocked(){try{if(sessionStorage.getItem("RM_PORTERO")==="ok")return tr
    sesión compartido, se valida contra su /exec y abre la vista sin pedir clave. */
 function porteroIntento(cb){var t=null;try{t=localStorage.getItem("pyod_clave_v1");}catch(e){}
   if(!t||String(t).indexOf("sy")!==0){cb(false);return;}
-  try{fetch("https://script.google.com/macros/s/AKfycbwlDDCWWzOWYZsUpBU9uqsQ7aenQ469PF6s6FkNlBFS1_cJSU5njG9oQmuyELy5zlqzFg/exec?recurso=canje&board=RM&t="+encodeURIComponent(t))
+  try{fetch("https://script.google.com/macros/s/AKfycbwlDDCWWzOWYZsUpBU9uqsQ7aenQ469PF6s6FkNlBFS1_cJSU5njG9oQmuyELy5zlqzFg/exec?recurso=canje&board=RM&t="+encodeURIComponent(t),{credentials:'omit'})
     .then(function(r){return r.json();})
     .then(function(d){if(d&&d.ok){try{sessionStorage.setItem("RM_PORTERO","ok");}catch(e){}cb(true);}else cb(false);})
     .catch(function(){cb(false);});}catch(e){cb(false);}}
@@ -52,7 +52,7 @@ function fetchBoard(fin,cb){
   setBadge("loading","Cargando");
   var url=CONFIG.SHEET_URL+"?recurso=board&k="+encodeURIComponent(credencial())+(fin?("&fin="+encodeURIComponent(fin)):"")+"&cb="+Date.now();
   var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort();},FETCH_TIMEOUT);
-  fetch(url,{signal:ctrl.signal}).then(function(r){return r.json();}).then(function(j){
+  fetch(url,{signal:ctrl.signal,credentials:'omit'}).then(function(r){return r.json();}).then(function(j){
     clearTimeout(to);
     if(j&&j.error==="liga"){credencialRechazada();return;}   /* credencial inválida → limpiar y volver a pedir acceso */
     if(j&&j.tablas){if(!fin)guardarCache(j);cb(null,j);}
@@ -219,7 +219,7 @@ function tramitePor(id){var t=null;tabla("TRAMITES").forEach(function(x){if(Stri
 function post(payload,cb){
   payload.request_id=payload.request_id||("web-"+Date.now());
   payload.k=credencial();   /* toda escritura viaja con la credencial del Portero; el servidor la valida */
-  fetch(CONFIG.SHEET_URL,{method:"POST",body:JSON.stringify(payload)})
+  fetch(CONFIG.SHEET_URL,{method:"POST",body:JSON.stringify(payload),credentials:'omit'})
     .then(function(r){return r.json();})
     .then(function(j){if(j&&j.error==="liga"){credencialRechazada();return;}cb(null,j);}).catch(function(e){cb(e);});
 }
