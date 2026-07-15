@@ -24,3 +24,7 @@ en **gate duro**: sin credencial válida el board no muestra nada.
 4. Implementar → Administrar implementaciones → ✏️ → Nueva versión (conserva la URL `/exec`).
 
 Los montos financieros y la escritura requieren sus propias claves (no incluidas en este repo).
+
+## Costos oficiales 2026
+
+`costos-oficiales.html` muestra derechos vinculados con los trámites del proyecto, su fórmula, UMA y fundamento. El botón **Actualizar cifras** comprueba disponibilidad de las fuentes oficiales y registra la fecha local de consulta. Para verificación server-to-server, integrar `apps-script/costos-refresh.gs` en el Apps Script y enrutar `tipo=actualizar_costos` después de validar las credenciales.

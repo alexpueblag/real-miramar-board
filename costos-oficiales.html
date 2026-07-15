@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Costos oficiales · Real de Miramar</title>
+<link rel="stylesheet" href="assets/estilo.css?v=20"><link rel="stylesheet" href="https://alexpueblag.github.io/yod-portal/os/shell.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+<style>
+.costbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0}.costgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.costcard{border:1px solid var(--linea);border-radius:14px;padding:16px;background:var(--papel)}.costcard h3{margin:5px 0 9px}.costmeta{font-size:12px;color:var(--piedra);line-height:1.5}.costamt{font-size:24px;margin:10px 0}.costtag{display:inline-block;padding:3px 8px;border-radius:20px;background:#eee7d9;font-size:11px}.costwarn{color:#9b5a20}.costsrc{font-size:12px}.costsrc a{color:var(--oro)}
+</style></head><body><div id="nav"></div><main id="app"></main><footer>Real de Miramar · tarifas orientativas con fundamento oficial.</footer>
+<script src="assets/board.js?v=13"></script><script>
+var LEY='https://gestion.api.congresoson.gob.mx/assets/archivos/2025/12/oh_cgsfqGwj_0GaF5qPsad3N0WBHw31e.pdf';
+var UMA={diaria:117.31,mensual:3566.22,anual:42794.64,vigente_desde:'2026-02-01',verificada:'2026-07-15T12:00:00-07:00',fuente:'https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2026/uma/uma2026.pdf'};
+var BASE=[
+['T01','Anteproyecto','Art. 67.9','2.10 UMA por plano',2.10,2.10,'calculable'],['T02','Subdivisión','Art. 66.I','5 UMA recepción + 5 por lote resultante',20,20,'calculable'],
+['T09','Factibilidad de uso de suelo','Art. 66.V','2.15 a 3 UMA por trámite',2.15,3,'rango oficial'],['T12','Alineamiento y números oficiales','Arts. 66.VII y 68.XI','3.25 UMA + 0.55 por unidad; supuesto 47 unidades',29.1,29.1,'confirmar cobro conjunto'],
+['T18','Impacto ambiental municipal','Art. 81.I-II','15 UMA solicitud + 110 UMA por superficie 10,001–50,000 m²',125,125,'confirmar superficie afectada'],['T19','Protección Civil/Bomberos','Art. 79.b','15 a 30 UMA según superficie',15,30,'falta superficie'],
+['T20','Donación del desarrollo','Art. 68.IV','Valor comercial del terreno exigible',null,null,'requiere avalúo'],['T25','Autorización provisional','Art. 69 y 68.I','5 UMA',5,5,'confirmar clasificación'],
+['T30','Licencia de urbanización y supervisión','Art. 68.III','4.5 al millar de $10,860,524',null,null,'calculable',48872.36],['T31','Régimen de condominio','Art. 68.XIII','4.20 UMA por lote; supuesto 47 lotes',197.4,197.4,'confirmar 45 vs 47'],
+['T35','Revisión + autorización desarrollo horizontal','Art. 68.II(a)','3 al millar del costo total del proyecto',null,null,'falta presupuesto total'],['T38','Licencia de construcción','Art. 67, tabla','UMA por m², clase y superficie',null,null,'faltan m² y clasificación'],
+['T42','Acta municipal de entrega-recepción','Art. 68.XII','8.35 UMA',8.35,8.35,'calculable'],['T45','Terminación y uso/ocupación','Arts. 67.7 y 66.XI','0.05 UMA/m² + 3.25 UMA',null,null,'faltan m²']];
+function mx(n){return n==null?'Por calcular':'$'+Math.round(n).toLocaleString('es-MX')+' MXN'}
+function rango(x){if(x[7]!=null)return mx(x[7]);if(x[4]==null)return'Variable';var a=x[4]*UMA.diaria,b=x[5]*UMA.diaria;return a===b?mx(a):mx(a)+' – '+mx(b)}
+window.renderPage=function(B){var g='<h1 class="serif">Costos oficiales</h1><p>Estimador trazable de derechos gubernamentales. No sustituye la liquidación de la autoridad.</p>'+
+'<div class="costbar"><span class="costtag">UMA 2026: $'+UMA.diaria.toFixed(2)+'/día</span><span id="cstamp" class="costmeta">Verificado '+new Date(UMA.verificada).toLocaleString('es-MX')+'</span><button class="btn" onclick="actualizar()"><i class="ti ti-refresh"></i> Actualizar cifras</button></div><div class="costgrid">';
+BASE.forEach(function(x){g+='<article class="costcard"><span class="costtag">'+x[0]+'</span><h3>'+x[1]+'</h3><div class="costamt">'+rango(x)+'</div><div>'+x[3]+'</div><p class="costmeta"><b>'+x[2]+'</b> · <span class="costwarn">'+x[6]+'</span></p><div class="costsrc"><a href="'+LEY+'" target="_blank" rel="noopener">Ley 114 · Guaymas 2026 ↗</a></div></article>'});
+B.$('app').innerHTML=g+'</div>';};
+window.actualizar=function(){var b=document.querySelector('.costbar .btn');b.disabled=true;b.textContent='Verificando…';Promise.all([fetch(UMA.fuente,{method:'HEAD',mode:'no-cors'}),fetch(LEY,{method:'HEAD',mode:'no-cors'})]).then(function(){var d=new Date();localStorage.setItem('rm_costos_verificados',d.toISOString());document.getElementById('cstamp').textContent='Fuentes consultadas '+d.toLocaleString('es-MX');Board.toast('Fuentes oficiales consultadas ✓');}).catch(function(){Board.toast('No se pudo consultar una fuente',true)}).finally(function(){b.disabled=false;b.innerHTML='<i class="ti ti-refresh"></i> Actualizar cifras'});};
+Board.init({page:'costos',sub:'tarifas y métricas oficiales'});
+</script><script src="https://alexpueblag.github.io/potenciales-yod/portero.js"></script><script src="https://alexpueblag.github.io/yod-portal/os/shell.js"></script></body></html>
