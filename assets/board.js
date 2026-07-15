@@ -129,6 +129,7 @@ function pintarNav(){
       '<a href="cuentas.html"><b><i class="ti ti-wallet"></i> Cuentas <i class="ti ti-lock"></i></b><small>Presupuesto, pagos y costos</small></a>'+
       '<a href="evidencia.html"><b><i class="ti ti-photo"></i> Evidencia</b><small>Documentos, videos y bitácora</small></a>'+
       '<a href="direccion.html"><b><i class="ti ti-compass"></i> Dirección <i class="ti ti-lock"></i></b><small>Decisiones y control interno</small></a>'+
+      '<a href="costos-oficiales.html"><b><i class="ti ti-receipt-tax"></i> Costos oficiales</b><small>Tarifas, UMA y fuentes verificables</small></a>'+
     '</div></details>';
   el.innerHTML='<header><div class="logo"><a href="index.html" style="text-decoration:none;color:inherit;"><span class="t serif">Real de Miramar</span></a>'+
     '<span class="sub">'+esc(OPTS.sub||"tablero del proyecto")+'</span></div>'+
